@@ -1,9 +1,13 @@
-Slides and demos from my DConf presentations
 # [DConf 2024](https://dconf.org/2024/#dennisk)
 
 ### Avoid the Garbage Collector in 80 Lines
 
-- [Video ]
+- [PCG-ranndom -  M.E. O'Neill](https://www.pcg-random.org/)
+- [Untangling Lifetimes: The Arena Allocator - Ryan Fleury](https://www.rfleury.com/p/untangling-lifetimes-the-arena-allocator)
+- [Enter The Arena: Simplifying Memory Management (Talk) - Ryan Fleury](https://www.rfleury.com/p/enter-the-arena-talk)
+- [Arena allocator tips and tricks - Chris Wellons](https://nullprogram.com/blog/2023/09/27/)
+- [Arenas and the almighty concatenation operator - Chris Wellons](https://nullprogram.com/blog/2024/05/25/)
+- [DConf '23--The Neat Language, "Don't do reference counting" - Mathis Beer](https://youtu.be/nDqlYnS-K2c?si=7BsYit8pkjRgjQlk&t=1430)
 
 ---
 
