@@ -8,6 +8,12 @@
 - [Arena allocator tips and tricks - Chris Wellons](https://nullprogram.com/blog/2023/09/27/)
 - [Arenas and the almighty concatenation operator - Chris Wellons](https://nullprogram.com/blog/2024/05/25/)
 - [DConf '23--The Neat Language, "Don't do reference counting" - Mathis Beer](https://youtu.be/nDqlYnS-K2c?si=7BsYit8pkjRgjQlk&t=1430)
+- [Walter’s quote about simplicity](https://forum.dlang.org/post/t2i7mg$22am$1@digitalmars.com)
+- [Everybody thinks about garbage collection the wrong way - Raymond Chen](https://devblogs.microsoft.com/oldnewthing/20100809-00/?p=13203)
+- [An amusing story about a practical use of the null garbage collector](https://devblogs.microsoft.com/oldnewthing/20180228-00/?p=98125)
+- [The GC series - The D Blog](https://dlang.org/blog/the-gc-series/)
+- [ The Golden Rules of Audio Programming - Pete Goodliffe - ADC16](https://www.youtube.com/watch?v=SJXGSJ6Zoro)
+- [Odin's context struct](https://github.com/odin-lang/Odin/blob/master/base/runtime/core.odin#L422C1-L434C2)
 
 ---
 

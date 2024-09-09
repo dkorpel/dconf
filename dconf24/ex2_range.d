@@ -18,19 +18,20 @@ struct IntStrings
 	{
 		char[] result = alloc.array!char(10);
 
-		// Simple integer to ascii conversion, nothing exciting 
+		// Simple integer to ascii conversion
 		size_t p = result.length;
-		for (int i = s; i > 0; i/=10) result[--p] = cast(char) ('0' + (i % 10));
-		
+		for (int i = s; i > 0; i/=10)
+			result[--p] = cast(char) ('0' + (i % 10));
+
 		return result[p .. $];
 	}
 
-	void popFront() scope  
+	void popFront() scope
 	{
 		s++;
 	}
 
-	bool empty() scope => s >= e;
+	bool empty() scope => (s >= e);
 }
 
 
@@ -40,11 +41,5 @@ void main()
 	foreach (char[] e; IntStrings(98, 105, a.alloc))
 	{
 		writeln(e);
-
-		version(TryEscape)
-		{
-			char[] global;
-			global = e;
-		}
 	}
 }

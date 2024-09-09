@@ -41,7 +41,6 @@ struct Arena
 	ubyte[] allocate(size_t size, size_t alignment) scope @trusted
 	{
 		const shift = (-cast(size_t) buffer.ptr) & (alignment - 1);
-
 		if (size + shift >= this.buffer.length)
 			newPage(size);
 		else
