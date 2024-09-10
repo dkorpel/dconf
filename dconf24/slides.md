@@ -1,21 +1,15 @@
 ---
 marp: true
 theme: uncover
-title: Translating C to D
+title: Avoid the Garbage Collector in 80 lines
 _class: lead
 paginate: true
 backgroundColor: #f8fff4
 header: 'https://github.com/dkorpel/dconf'
 math: mathjax
 
-style: |
-  .columns {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
 -----------------------------------------------------------
+![bg](img/bg.png)
 ### Avoid the Garbage Collector in 80 lines
 Dennis Korpel
 <!--_header: ''-->
@@ -52,14 +46,9 @@ void printPath()
 ```
 -----------------------------------------------------------
 # Conclusion
-Thank you Garbage Collector, for the ergonomics you provide
+Thank you Garbage Collector, for the ergonomics you provide 👍
 
 -----------------------------------------------------------
-<!--_backgroundColor: white-->
-<!--_header: ''-->
-# <!--fit--> The end
------------------------------------------------------------
-
 # Except...
 
 * Scenarios where you can’t use GC
@@ -69,50 +58,7 @@ Thank you Garbage Collector, for the ergonomics you provide
 * Built on top of `malloc` and `free`
 
 -----------------------------------------------------------
-# r/TQDC
-
-![Image](img/tqdc.png)
-
------------------------------------------------------------
-
-```D
-import core.memory, core.bitop;
-
-Allocator gc() => Allocator(null);
-
-struct Allocator
-{
-    AllocatorBase* x;
-
-    T[] array(T)(size_t length) return scope @trusted if (__traits(isPOD, T))
-    {
-        if (x == null || __ctfe)
-            return new T[length];
-        return cast(T[]) x.allocate(T.sizeof * length, T.alignof, x);
-    }
-}
-
-alias AllocateFunction = ubyte[] function(size_t size, size_t alignment, scope void* context);
-
-struct AllocatorBase
-{
-    immutable AllocateFunction allocate;
-}
-
-struct Arena
-{
-    @system private AllocatorBase base = AllocatorBase(&arenaAllocate);
-    @system private ArenaPage* page = null;
-    @system private ubyte[] buffer; // slice of free space
-
-    private static ubyte[] arenaAllocate(size_t size, size_t alignment, scope void* ctx) @system =>
-        (cast(Arena*) ctx).allocate(size, alignment);
-
-    @disable this(this);
-    @disable void opAssign();
-```
-
-<!--_footer: https://github.com/dkorpel/dconf/blob/master/dconf24/allocator.d-->
+![Image height:500](img/tqdc.png)
 
 -----------------------------------------------------------
 **Spoiler:**
@@ -132,25 +78,27 @@ void printPath()
     // a.~this();
 }
 ```
+<!--_footer: https://github.com/dkorpel/dconf/blob/master/dconf24/allocator.d-->
 
 -----------------------------------------------------------
 # Whoami
-- Msc. Computer Science from TU Delft
-- Part time Issue Manager for D Language Foundation
-- Part time D programmer at SARC
-- 2023: DConf talk about safe stack memory
+* Msc. Computer Science from TU Delft
+* Part time Issue Manager for D Language Foundation
+* Part time D programmer at SARC
+* 2023: DConf talk about safe stack memory
 
 -----------------------------------------------------------
 # Coming up
-- Why not use GC?
-- Failed `@nogc` approaches
-- The 80 line solution
-- Evaluation
-- ~~DIP1000~~ scoped pointer updates
+* Why not use GC?
+* On simplicity
+* 6 suboptimal `@nogc` approaches
+* The 80 line solution
+* ~~DIP1000~~ scoped pointers status update
 
 -----------------------------------------------------------
 
-<!--_backgroundImage: url('https://raw.githubusercontent.com/dkorpel/ctod/master/docs/background.svg')-->
+<!--_header: ''-->
+![bg](img/bg.png)
 # Why not use GC?
 
 -----------------------------------------------------------
@@ -158,17 +106,18 @@ void printPath()
 # GC Phobia
 
 ![Image height:250](img/newsgroup-gc-phobia.png)
+<!--_footer: https://forum.dlang.org/post/mailman.147.1702920162.3719.digitalmars-d-learn@puremagic.com-->
 
 -----------------------------------------------------------
 
 # Controversy
 
-- Always about those darn pauses
-- I find myself on neither side
-- Reference Counting better for real-time?
+* Always about those darn pauses
+* I find myself on neither side of the debate
+* Reference Counting better for real-time?
 
 -----------------------------------------------------------
-## (Automatic) Reference counting
+### (Automatic) Reference counting
 
 ```D
 struct RefCountedString {
@@ -183,15 +132,12 @@ struct RefCountedString {
     this(this) { ++*count; }
 
     ~this() {
-        if (--*count == 0)
-            free();
+        if (--*count == 0) free();
     }
 }
 ```
 -----------------------------------------------------------
-# Audio programming
-
-48 Khz sample rate, 10 ms latency
+### Example: Audio programming
 
 ```D
 float phase = 0;
@@ -205,55 +151,57 @@ void audioCallback(float[] buffer)
     }
 }
 ```
+48 Khz sample rate, 10 ms latency ⇒ 480 samples
 <!--Callback needs to compute 480 samples with a strict deadline-->
 -----------------------------------------------------------
-# Garbage collector comes
+# Garbage collector comes!
 
 ![Image](img/dennis-garbage-truck.png)
 
 Takes several ms to collect
 
 -----------------------------------------------------------
-
 # Deadline missed?
-- No, GC only pauses threads it knows
-- Audio thread is already 'detached'
-- What if we need to allocate inside audioCallback?
-- Reference Counting wouldn't have helped
+* No, GC only pauses threads it knows
+* Audio thread is already 'detached'
+* What if we want to load a sample in audioCallback?
+* `std.file` uses GC 😲
+* But Reference Counting wouldn't have helped
 
 -----------------------------------------------------------
 ### Audio guidelines
 
-![bg right height:320](img/adc-principles.png)
-<!--_footer: The Golden Rules of Audio Programming - Pete Goodliffe - ADC16-->
+![bg right height:350](img/adc-principles.png)
 
 - No syscalls
 - No locks
 - No malloc
 - No file I/O
+<!--_footer: The Golden Rules of Audio Programming - Pete Goodliffe - ADC16 https://youtu.be/SJXGSJ6Zoro?si=F-QLhLi-AME7HDeo-->
 
 -----------------------------------------------------------
-
 ### @nogc should have a reason
 
 ![Image height:500](img/nogc-project.png) ⚠️
 <!--_footer: https://github.com/dlang/project-ideas/issues/56-->
 
 -----------------------------------------------------------
-
 ### @nogc should have a reason
 
 ![Image height:400](img/dplug-dub.png) ✅
 <!--_footer: https://code.dlang.org/packages/dplug-->
 
 -----------------------------------------------------------
-<!--_backgroundImage: url('https://raw.githubusercontent.com/dkorpel/ctod/master/docs/background.svg')-->
-# Simplicity
+![bg](img/bg.png)
+<!--_header: ''-->
+# On simplicity
 
 -----------------------------------------------------------
 ### 1960s: Linear Congruential Random
 
 $X_{n+1} = \left( a X_n + c \right)\bmod m$
+
+![bg](img/random-noise.png)
 
 <!--_footer: https://en.wikipedia.org/wiki/RANDU-->
 ```D
@@ -265,67 +213,65 @@ int RANDU()
 }
 ```
 -----------------------------------------------------------
-
-### 1997: MERSENNE TWISTER
+# <!--fit--> MERSENNE TWISTER
 
 <!--_header: ''-->
 ![bg](img/twister.png)
 
 -----------------------------------------------------------
 
+![bg ](img/twister-diagram.png)
+<!--_header: ''-->
+<!--_footer: Visualization by Cmglee, CC-BY-SA-3.0: https://commons.wikimedia.org/wiki/File:Mersenne_Twister_visualisation.svg-->
+-----------------------------------------------------------
 ### 1997: MERSENNE TWISTER
-
-- 624 ints storage
-- Default PRNG Excel, Matlab, GNU octave, Phobos
-- Fails TestU01 statistical tests (2007)
+* 624 ints storage (2 Kb)
+* Default PRNG Excel, Matlab, GNU octave, Phobos
+* Fails TestU01 statistical tests (2007)
+-----------------------------------------------------------
+### 2014: PCG Random
+* More complex than the twister?
+* Nope, just LCG with good constants and a tweak
 
 -----------------------------------------------------------
 ### 2014: PCG Random
-- More complex than the twister?
-- LCG64 actually pretty good
 
-```C
-uint32_t pcg32_random_r(pcg32_random_t* rng)
-{
-    uint64_t oldstate = rng->state;
-    rng->state = oldstate * 6364136223846793005ULL + (rng->inc|1);
-    uint32_t xorshifted = ((oldstate >> 18u) ^ oldstate) >> 27u;
-    uint32_t rot = oldstate >> 59u;
-    return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
-}
-```
------------------------------------------------------------
-### 2014: PCG Random
+- 64 bit seed, 32 bit output
+- Most significant bits are most random
+- Use them to permute the bits
 
 ```
 1011101000000010100100100010100010010011010000100010111111011001
-10111
-  |  01000000010100100100010100010010
-  |                 |
-  |                 |
- 23
+10111              |
+  | [01000000010100100100010100010010]
+  |                |
+  +----------(rotate_bits)
+                   |
+    10100100100010100010010][010000000 ---> output
+```
+-----------------------------------------------------------
+### 2014: PCG Random
+
+```D
+uint randomPcg32(ref ulong seed)
+{
+    const ulong x = seed;
+    seed = x * 0x5851F42D4C957F2D + 0x14057B7EF767814F;
+    uint xorshifted = cast(uint)(((x >> 18UL) ^ x) >> 27UL);
+    uint rot = cast(uint)(x >> 59UL);
+    return (xorshifted >> rot) | (xorshifted << ((-rot) & 0b11111));
+}
 ```
 
------------------------------------------------------------
-### Quite Okay Formats
-
-- Dominic Szablewski
-- Similar to PNG / MP3
-- Encoder / decoder are 400 lines
-
-<!--_footer: https://qoiformat.org/-->
+(`std.random` is 4000 lines)
 
 -----------------------------------------------------------
-### Walter's quote
 
 > Anybody can come up with a a complex solution. A simple one takes genius. You know it's genius when others say: "phui, anyone could have done that!" Except that nobody did.
 
+-Walter Bright
+
 <!--_footer: https://forum.dlang.org/post/t2i7mg$22am$1@digitalmars.com-->
-
------------------------------------------------------------
-
-<!--_header: ''-->
-<video controls="controls" src="img/RC.mp4"></video>
 
 -----------------------------------------------------------
 ### Reference Counting complexity
@@ -334,20 +280,24 @@ uint32_t pcg32_random_r(pcg32_random_t* rng)
 - Copying, Moving, and Forwarding (DIP1040)
 
 <!--_footer: https://github.com/RazvanN7/DIPs/blob/Mutable_Dip/DIPs/DIP1xxx-rn.md-->
+
 -----------------------------------------------------------
 ### GC complexity
 
-- 7000 lines in druntime
-- Platform specific
-- Centralized, needs to know everything
+* 7000 line implementation in druntime
+* Centralized, needs to know everything
+* Platform specific details
 
-- False pointers on 32-bit
-- Missing GC.addRoot
-- Virus scanners
+TODO DIAGRAM
+
+* False pointers on 32-bit
+* Missing GC.addRoot
+* Virus scanners
 
 -----------------------------------------------------------
-<!--_backgroundImage: url('https://raw.githubusercontent.com/dkorpel/ctod/master/docs/background.svg')-->
-## 6 suboptimal `@nogc` solutions
+![bg](img/bg.png)
+<!--_header: ''-->
+## 6 suboptimal @nogc solutions
 
 -----------------------------------------------------------
 ### 0. Manually free
@@ -362,21 +312,46 @@ void main()
 }
 ```
 
-- Not memory safe (double free)
 - Clutters code (esp. unittests and scripts)
 
 -----------------------------------------------------------
 ### 0. Manually free
-- `malloc` ⟺ `free`
-- `ITypeinfo.GetFuncDesc` ⟺ `ReleaseFuncDesc`
-- `ITypeinfo.GetVarDesc` ⟺ `ReleaseVarDesc`
-- `ITypeinfo.GetNames` ⟺ ~~`ReleaseNames`~~ `SysFreeString`
-- `IMoniker.GetDisplayName` ⟺ ~~`SysFreeString`~~ `CoTaskMemFree`
+* `malloc` ⟺ `free`
+* COM programming with `ITypeInfo` and `IMoniker`:
+* `GetFuncDesc` ⟺ `ReleaseFuncDesc`
+* `GetVarDesc` ⟺ `ReleaseVarDesc`
+* `GetNames` ⟺ ~~`ReleaseNames`~~ `SysFreeString`
+* `GetDisplayName` ⟺ ~~`SysFreeString`~~ `CoTaskMemFree`
 -----------------------------------------------------------
+### 0. Manually free
 
+- Documentation suggests `IMalloc::Free`
+
+```D
+void getString(IMoniker moniker)
+{
+    BSTR displayName;       
+    moniker.GetDisplayName(ctx, null, &displayName);
+
+    writeln(displayName.fromStringz);
+
+    IMalloc allocator;
+    CoGetMalloc(1, &allocator);
+    allocator.Free(displayName);
+    allocator.release();
+}
+```
+-----------------------------------------------------------
+### 0. Manually free
+
+* Risky (memory leaks, double free)
+* `@live` offers some protection
+* Doesn't distinguish GC/malloc pointers
+
+-----------------------------------------------------------
 ![bg right height:250](img/right0.png)
 
-The borrow checker catches this right?
+The borrow checker catches this, right?
 ```D
 void main() @live
 {
@@ -385,9 +360,7 @@ void main() @live
 }
 ```
 <!--_footer: https://dlang.org/blog/2019/07/15/ownership-and-borrowing-in-d/-->
-
 -----------------------------------------------------------
-
 ![bg right height:250](img/right1.png)
 
 Right?
@@ -400,39 +373,61 @@ void main() @live
 }
 ```
 <!--_footer: https://dlang.org/blog/2019/07/15/ownership-and-borrowing-in-d/-->
-
 -----------------------------------------------------------
 ### 1. Don’t allocate
 
-- Return lazy ranges
-- Works for simple algorithms (splitter, chain)
-- Voldemort types instead of simple arrays
-- `std.path: buildPath`
-- Annoying to write for complex algorithms
+```D
+void main()
+{
+    foreach (string path; paths.splitter(':'))
+    {
+        writeln(path);
+    }
+}
+```
+* Return lazy ranges instead of arrays
+* Annoying to write for complex algorithms
 
 -----------------------------------------------------------
 <!--_header: ''-->
 
 ![Image height:700](img/array-vs-range.png)
 
+-----------------------------------------------------------
+### 1. Don’t allocate
+
+- Voldemort Types can be annoying
+
+```D
+import std;
+
+void main()
+{
+    string s = withExtension("Sonic", ".exe");
+}
+```
+
+```
+Error: cannot implicitly convert expression `withExtension("Sonic", ".exe")` of type `Result` to `string`
+```
 
 -----------------------------------------------------------
 ### 2. Stack memory
 
-- Automatically cleaned up
-- Can’t return it
+* Automatically cleaned up
+* Can’t return it
 ```D
-char[] environmentGet(string x)
+char[] environmentGet(string var)
 {
     char[1024] buf = void;
-    // GetEnvironmentVariable(buf[], )
+    // GetEnvironmentVariable(var, buf[]);
     return buf[]; // Error
 }
 ```
 -----------------------------------------------------------
 ### 2. Stack memory
-- Annoying to call
-- Small, fixed sizes only
+* Annoying to call
+* Small, fixed sizes only
 
 ```D
 void main()
@@ -464,75 +459,77 @@ void main()
 -----------------------------------------------------------
 ### 3. OutputRanges / Appenders
 
-- Annoying to write / call
-- Still need a `@nogc` Appender
-- Hard to make `@safe`
+* Annoying to write / call
+* Still need a `@nogc` Appender
+* Hard to make `@safe`
 
 -----------------------------------------------------------
 ### 4. Null garbage collection
 
-> ~~Memory is automatically managed by occasionally pausing all threads and scanning for memory still in use, and freeing the rest.*~~
+> ~~Memory is automatically managed by occasionally pausing all threads and scanning for memory still in use, and freeing the rest.~~
 
 -----------------------------------------------------------
 ### 4. Null garbage collection
 
-- "Pretend there's infinite memory"
+- "Everybody thinks about garbage collection the wrong way" - Raymond Chen
+- Garbage collection is simulating a computer with an infinite amount of memory
 - Null garbage collector: never deallocate
 - Works if enough RAM
 
+<!--_footer: https://devblogs.microsoft.com/oldnewthing/20100809-00/?p=13203 -->
+
 -----------------------------------------------------------
+### 4. Null garbage collection
 
-<!--_footer: https://devblogs.microsoft.com/oldnewthing/20180228-00/?p=98125-->
+Amusing story from Kent Mitchell
+![Image](img/missile.png)
 
-```
-From: k...@rational.com (Kent Mitchell)
-Subject: Re: Does memory leak?
-Date: 1995/03/31
-
-Norman H. Cohen (nco...@watson.ibm.com) wrote:
-: The only programs I know of with deliberate memory leaks are those whose
-: executions are short enough, and whose target machines have enough
-: virtual memory space, that running out of memory is not a concern.
-: (This class of programs includes many student programming exercises and
-: some simple applets and utilities; it includes few if any embedded or
-: safety-critical programs.)
-
-This sparked an interesting memory for me.  I was once working with a
-customer who was producing on-board software for a missile.  In my analysis
-of the code, I pointed out that they had a number of problems with storage
-leaks.  Imagine my surprise when the customers chief software engineer said
-"Of course it leaks".  He went on to point out that they had calculated the
-amount of memory the application would leak in the total possible flight time
-for the missile and then doubled that number.  They added this much
-additional memory to the hardware to "support" the leaks.  Since the missile
-will explode when it hits its target or at the end of its flight, the
-ultimate in garbage collection is performed without programmer intervention.
-```
+<!--_footer: https://devblogs.microsoft.com/oldnewthing/20180228-00/?p=98125 -->
 
 -----------------------------------------------------------
 
 ### 4. Null garbage collection
 ![Image height:500](img/walter-null-gc.png)
 
+<!--_footer: https://youtu.be/bNJhtKPugSQ?si=z-USHbQyKkhrlH9c&t=579 -->
+
 -----------------------------------------------------------
 
 ### 4. Null garbage collection
 
-- I use this in WebAssembly
-- "Out Of Memory" risk
+* Porting apps using GC
+* No GC implementation for WebAssembly yet
+* "Out Of Memory" risk
 
 -----------------------------------------------------------
 ### 5. Scope Array
 
 ```D
-void f()
+struct ScopeArray(T)
 {
-    size_t length = 1024;
-    auto a = ScopeArray!char(length);
+    T[32] stackMem;
+    T[] big;
 
-    scope char[] buf = a.getSlice();
+    this(size_t length)
+    {
+        if (length > stackMem.size)
+            big = malloc(T.sizeof * length);
+    }
 
-    char[] path = environmentGet("PATH", buf);
+    T[] opIndex() => big ? big[] : stackMem[];
+
+    ~this() { if (big.ptr) free(big.ptr); }
+}
+```
+
+-----------------------------------------------------------
+### 5. Scope Array
+```D
+void main()
+{
+    auto a = ScopeArray!char(length: 1024);
+
+    char[] path = environmentGet("PATH", a[]);
 
     writeln(path);
 
@@ -544,21 +541,35 @@ void f()
 ### 5. Scope Array
 
 ```D
-void f()
+void main()
 {
-    size_t length = 500;
     auto a = Arena();
 
-    scope Allocator alloc = a.allocator();
+    char[] path = environmentGet(buf, &a);
 
-    environmentGet(buf, alloc);
+    writeln(path);
 
     // sa.~this();
 }
 ```
 
 -----------------------------------------------------------
+<!--_header: ''-->
+![bg](img/bg.png)
 # The 80 line solution
+-----------------------------------------------------------
+# Arenas
+
+```D
+struct Arena
+{
+    ubyte[] buffer;
+    ArenaPage* page = null;
+}
+```
+
+
+
 -----------------------------------------------------------
 ```D
 struct Allocator
@@ -576,14 +587,6 @@ alias AllocateFunction = ubyte[] function(size_t size, size_t alignment, scope v
 
 Did you just re-invent classes and delegates?
 (Yes, for C compatibility)
-
------------------------------------------------------------
-# Arenas
-
-- Our own stack
-- But accessed through a variable
-- Bump the pointer to allocate
-- Throw everything out in destructor
 
 -----------------------------------------------------------
 # Hannah Montana functions
@@ -613,17 +616,52 @@ void main()
 - Best of both worlds!
 
 -----------------------------------------------------------
+# Safety
 
+```D
+// Requires `-preview=dip1000`
+string environmentGet(string key, return scope Allocator alloc = gc);
 
-### The good and bad
+string global;
 
-| 😎                       | ☹️                           |
+void main() @safe
+{
+    global = environmentGet("PATH", gc); // Fine
+
+    Arena a;
+    global = environmentGet("PATH", a.alloc); // Error
+    string l = environmentGet("PATH", a.alloc); // Inferred `scope`
+    global = l; // Error
+}
+```
+-----------------------------------------------------------
+# Safety
+
+```D
+struct Arena
+{
+    Allocator alloc() return => Allocator(&this);
+}
+
+struct Allocator
+{
+    AllocatorBase* x;
+
+    T[] make(T)(size_t length) return scope => cast(T[]) x.allocate(length);
+}
+```
+* Using `@system` variables to cheat transitive scope
+
+-----------------------------------------------------------
+### The good and the bad/ugly
+
+| Do 😎                    | Don't ☹️                     |
 |--------------------------|------------------------------|
-| Freeing at end of scope  | Manually calling free        |
-| Freeing big chunks       | Pairing each malloc ⟺ free  |
-| GC API (by default)      | Cluttered call-sites         |
+| Free big chunks          | Pair each malloc ⟺ free    |
+| Free at end of scope     | Manually call free          |
+| Return simple values     | Be annoying to call        |
 
----
+-----------------------------------------------------------
 
 # BUT WHAT ABOUT
 
@@ -635,18 +673,6 @@ void main()
 - Cheat: pretend it is `@nogc`
 - Hot take: `@nogc` should not be part of function type
 - Linting tool instead
-
------------------------------------------------------------
-# Ranges
-
-- Works! See `dconf24/ex2_range.d`
-
-```D
-struct Range
-{
-    Allocator allocator;
-}
-```
 
 -----------------------------------------------------------
 # Dynamic arrays
@@ -704,12 +730,9 @@ main :: proc()
     assert(context.user_index == 456)
 }
 ```
-
 <!--_footer: https://odin-lang.org/docs/overview/#implicit-context-system-->
 
 -----------------------------------------------------------
-
-<!--_footer: https://github.com/odin-lang/Odin/blob/a25a9e6ebe58510cfac20e1187f41a01ec3ec2b2/base/runtime/core.odin#L434-L446-->
 
 ```D
 struct Context
@@ -727,59 +750,129 @@ struct Context
     void* _internal;
 }
 ```
+<!--_footer: https://github.com/odin-lang/Odin/blob/a25a9e6ebe58510cfac20e1187f41a01ec3ec2b2/base/runtime/core.odin#L434-L446-->
 
 -----------------------------------------------------------
-
 ## Aftermath
 
-- Deleted tons of destructors, `free` calls, `// #BAD_TRUSTED` comments
+- Deleted tons of destructors and `free()` calls
 - Deleted `ScopeArray` and `Appender` (just need `Array`)
 - It only gets better
 
 -----------------------------------------------------------
-
 ## GPU memory
 
-
-
------------------------------------------------------------
-
-
-# DIP1000 issues
+- No near/far pointers, no Phobos/Tango
 
 -----------------------------------------------------------
+```D
+GlBuffer buffer = GlBuffer(1000); // glBufferSubdata
+GameState game;
+while (1)
+{
+    game.update(pollInput());
 
-# Duplicated code
+    {
+        auto mapper = Mapper(buffer);
+        auto drawBuffer = Array!float(gpuMem[], failAllocator);
 
-- Refactored `dmd/escape.d`
-- Number of `if` statements 310 => 240
-- Fixing bugs in the process
+        game.draw(drawBuffer);
+        // mapper.~this() unmaps
+    }
 
+    glDrawArrays(buffer);
+}
+```
 -----------------------------------------------------------
-
 # Invalidation
 
-- Just don't invalidate 🙈
+<!--_footer: https://github.com/atilaneves/automem/issues/25-->
+```D
+void main() @safe
+{
+    import automem.vector;
+    auto vec1 = vector(1, 2, 3);
+    int[] slice1 = vec1[];
+    vec1.reserve(4096);
+    int[] slice2 = vec1[];
+}
+```
+
+* Just don't invalidate inside a block scope 🙈
 
 -----------------------------------------------------------
+<!--_header: ''-->
+![bg](img/bg.png)
 
-# Struct fields / transitive scope
+## Wrapping up
+
+-----------------------------------------------------------
+### Scoped pointers status update
+
+* Refactored `dmd/escape.d` this year
+* Number of `if` statements 310 ⇒ 240
+* `scope` inference of `std.array: array` fixed
+* Confusing `return scope` syntax still here
+* `retref` and `retscope`?
+* Want partial / transitive scope for structs
+
+-----------------------------------------------------------
+### Suggested GC strategy
+* Write code as if you have infinite memory
+* (Optimization for a known future is okay)
+* _If_ you need to avoid the GC
+  * Replace `new T[]` with `allocator.array!T`
+  * Place `Arena` / `Allocator` where needed
+  * Use `-preview=dip1000` for `@safe`
+  * Otherwise it's `@system`/`@trusted`
+
+-----------------------------------------------------------
+### Takeaways
+* GC avoidance should be intentional
+* Hannah Montana functions are cool
+* Use {} block scopes instead of calls to `free()`
+* Extract destructors from parameters / fields
+* (IMO) `@nogc` should not be part of function type
+
+-----------------------------------------------------------
+![bg](img/title.png)
+# The end
+
+Image credits:
+- Missile by Marcus Burns: https://commons.wikimedia.org/w/index.php?curid=120217981, CC BY 3.0
+-
+
+-----------------------------------------------------------
+### Quite Okay Formats
+
+- Dominic Szablewski
+- Similar to PNG / MP3
+- Encoder / decoder are 400 lines
+
+<!--_footer: https://qoiformat.org/-->
+
+-----------------------------------------------------------
+## Partial / transitive scope
 
 ```D
 struct Context
 {
     string source;
     HashMap!(string, Declaration) symbolTable;
-
+    Token[] tokens;
+    // ...
 }
 ```
 
------------------------------------------------------------
-
-- GC avoidance should be intentional
-- Don’t call `free()` yourself
-- Arenas are like named stack memory
-- `return scope` + default parameters marry GC and manual memory
-- `@nogc` should be a linting tool, not part of function type
+* Inference can be programmed
+* But how much `scope[...]` syntax do we want?
 
 -----------------------------------------------------------
+## Syntax woes
+
+* `return scope` vs. `scope return` still here
+* Inference by default would help
+* `ret&` and `retscope`?
+-----------------------------------------------------------
+<!--_header: ''-->
+<video src="img/RC.mp4"></video>
