@@ -9,6 +9,10 @@ header: 'https://github.com/dkorpel/dconf'
 math: mathjax
 
 -----------------------------------------------------------
+
+<!-- https://github.com/marp-team/marpit/tree/main/docs -->
+<!-- https://github.com/marp-team/marpit/blob/main/docs/image-syntax.md -->
+
 ![bg](img/bg.png)
 ### Avoid the Garbage Collector in 80 lines
 Dennis Korpel
@@ -62,11 +66,12 @@ Thank you Garbage Collector, for the ergonomics you provide 👍
 
 -----------------------------------------------------------
 **Spoiler:**
+
 ```D
 string environmentGet(string key, return scope Allocator alloc = gc)
 {
     char[] buf = alloc.array!char(1024);
-    // Call OS function
+    // Call OS function GetEnvironmentVariableW(key.toWstring, buf.ptr, buf.length);
     return buf[0 .. n];
 }
 
@@ -85,7 +90,7 @@ void printPath()
 * Msc. Computer Science from TU Delft
 * Part time Issue Manager for D Language Foundation
 * Part time D programmer at SARC
-* 2023: DConf talk about safe stack memory
+* DConf'23: talk about safe stack memory
 
 -----------------------------------------------------------
 # Coming up
@@ -230,8 +235,11 @@ int RANDU()
 * Fails TestU01 statistical tests (2007)
 -----------------------------------------------------------
 ### 2014: PCG Random
+* Melissa O Neil
 * More complex than the twister?
 * Nope, just LCG with good constants and a tweak
+
+<!--_footer: https://www.pcg-random.org/-->
 
 -----------------------------------------------------------
 ### 2014: PCG Random
@@ -275,11 +283,12 @@ uint randomPcg32(ref ulong seed)
 
 -----------------------------------------------------------
 ### Reference Counting complexity
+
 - `__mutable` / `__metadata` storage class (DIP1xxx)
-- Borrows (DIP1021)
+- Argument Ownership and Function Calls (DIP1021)
 - Copying, Moving, and Forwarding (DIP1040)
 
-<!--_footer: https://github.com/RazvanN7/DIPs/blob/Mutable_Dip/DIPs/DIP1xxx-rn.md-->
+<!--_footer: https://github.com/RazvanN7/DIPs/blob/Mutable_Dip/DIPs/DIP1xxx-rn.md https://dlang.org/dips/1021 https://dlang.org/dips/1040 -->
 
 -----------------------------------------------------------
 ### GC complexity
@@ -320,8 +329,9 @@ void main()
 * COM programming with `ITypeInfo` and `IMoniker`:
 * `GetFuncDesc` ⟺ `ReleaseFuncDesc`
 * `GetVarDesc` ⟺ `ReleaseVarDesc`
-* `GetNames` ⟺ ~~`ReleaseNames`~~ `SysFreeString`
-* `GetDisplayName` ⟺ ~~`SysFreeString`~~ `CoTaskMemFree`
+* `GetNames` ⟺ ?
+* `SysFreeString`
+* `GetDisplayName` ⟺ `CoTaskMemFree`
 -----------------------------------------------------------
 ### 0. Manually free
 
@@ -344,10 +354,12 @@ void getString(IMoniker moniker)
 -----------------------------------------------------------
 ### 0. Manually free
 
+* Simple
 * Risky (memory leaks, double free)
 * `@live` offers some protection
 * Doesn't distinguish GC/malloc pointers
 
+<!--_footer: https://dlang.org/blog/2019/07/15/ownership-and-borrowing-in-d/-->
 -----------------------------------------------------------
 ![bg right height:250](img/right0.png)
 
@@ -356,10 +368,9 @@ The borrow checker catches this, right?
 void main() @live
 {
     int* x = cast(int*) malloc(4);
-    free(x); ✅
+    free(x); // Compiles
 }
 ```
-<!--_footer: https://dlang.org/blog/2019/07/15/ownership-and-borrowing-in-d/-->
 -----------------------------------------------------------
 ![bg right height:250](img/right1.png)
 
@@ -369,10 +380,9 @@ Right?
 void main() @live
 {
     int* x = new int;
-    free(x); // No error by design
+    free(x); // No error, by design
 }
 ```
-<!--_footer: https://dlang.org/blog/2019/07/15/ownership-and-borrowing-in-d/-->
 -----------------------------------------------------------
 ### 1. Don’t allocate
 
@@ -386,7 +396,7 @@ void main()
 }
 ```
 * Return lazy ranges instead of arrays
-* Annoying to write for complex algorithms
+* Annoying to write for recursive algorithms
 
 -----------------------------------------------------------
 <!--_header: ''-->
@@ -399,23 +409,24 @@ void main()
 - Voldemort Types can be annoying
 
 ```D
-import std;
+import std.stdio, std.path;
 
 void main()
 {
-    string s = withExtension("Sonic", ".exe");
-}
-```
+    File f = File(withExtension("Sonic", ".exe"));
+    // Error: none of the overloads of `this` are
+    // callable using argument types `(Result)`
 
-```
-Error: cannot implicitly convert expression `withExtension("Sonic", ".exe")` of type `Result` to `string`
+    import std.array;
+    File g = File(withExtension("Sonic", ".exe").array);
+}
 ```
 
 -----------------------------------------------------------
 ### 2. Stack memory
 
-* Automatically cleaned up
-* Can’t return it
+- Automatically cleaned up
+- Can’t return it
 ```D
 char[] environmentGet(string var)
 {
@@ -426,15 +437,15 @@ char[] environmentGet(string var)
 ```
 -----------------------------------------------------------
 ### 2. Stack memory
-* Annoying to call
-* Small, fixed sizes only
+
+- Annoying to call
+- Small, fixed sizes only
 
 ```D
 void main()
 {
     char[1024] buf;
-    const n = environmentGet(buf[]);
-    const str = buf[0 .. n];
+    const str = environmentGet("PATH", buf[]);
 }
 ```
 
@@ -450,9 +461,11 @@ void environmentGet(O)(string key, ref O sink)
 
 void main()
 {
+    import std.array : Appender;
+
     Appender!string appender;
     environmentGet("PATH", appender);
-    string result = a.data();
+    string result = appender.data;
 }
 ```
 
@@ -486,20 +499,16 @@ Amusing story from Kent Mitchell
 
 <!--_footer: https://devblogs.microsoft.com/oldnewthing/20180228-00/?p=98125 -->
 
------------------------------------------------------------
-
-### 4. Null garbage collection
-![Image height:500](img/walter-null-gc.png)
-
-<!--_footer: https://youtu.be/bNJhtKPugSQ?si=z-USHbQyKkhrlH9c&t=579 -->
-
------------------------------------------------------------
+----------------------------------------------------------
 
 ### 4. Null garbage collection
 
-* Porting apps using GC
-* No GC implementation for WebAssembly yet
+* DMD does this (unless `dmd -lowmem`)
+* Separate compilation if not enough RAM
+* ctod does this for WebAssembly
 * "Out Of Memory" risk
+
+<!--_footer: https://dkorpel.github.io/ctod -->
 
 -----------------------------------------------------------
 ### 5. Scope Array
@@ -512,7 +521,7 @@ struct ScopeArray(T)
 
     this(size_t length)
     {
-        if (length > stackMem.size)
+        if (length > stackMem.length)
             big = malloc(T.sizeof * length);
     }
 
@@ -533,7 +542,7 @@ void main()
 
     writeln(path);
 
-    // sa.~this();
+    // a.~this();
 }
 ```
 
@@ -549,7 +558,7 @@ void main()
 
     writeln(path);
 
-    // sa.~this();
+    // a.~this();
 }
 ```
 
@@ -663,13 +672,10 @@ struct Allocator
 
 -----------------------------------------------------------
 
-# BUT WHAT ABOUT
-
------------------------------------------------------------
-
-# `@nogc`
+# But what about `@nogc`
 
 - Unlike `return scope` for lifetimes, there’s no `@inout_nogc`
+- DIPs for callback attributes still pending
 - Cheat: pretend it is `@nogc`
 - Hot take: `@nogc` should not be part of function type
 - Linting tool instead
@@ -677,7 +683,7 @@ struct Allocator
 -----------------------------------------------------------
 # Dynamic arrays
 
-- See `dconf24/ex3_array.d`
+<!--_footer: See `dconf24/ex3_array.d`-->
 
 ```D
 struct Array(T)
@@ -685,24 +691,29 @@ struct Array(T)
     T[] slice;
     size_t capacity;
     Allocator alloc;
+
+    void opOpAssign(string op : "~")(T[])
+    {
+
+    }
 }
 ```
 
 -----------------------------------------------------------
 # Overhead
 
-- GC also has 2-3x overhead...
-- Use memory mapping instead of linked list
-- 35 bits of real RAM (16 GB)
-- 48 bits virtual address space 256 TB
-- Stack already does this (2000 threads * 8 MB)
+* GC also has 2-3x overhead...
+* Use memory mapping instead of linked list
+* 35 bits of real RAM (16 GB)
+* 48 bits virtual address space 256 TB
+* Stack already does this (2000 threads * 8 MB)
 
 -----------------------------------------------------------
 # Unpredictable lifetimes
 
-- What if allocation depends on user input?
-- Pre-allocate a pool
-- Roll your own free-list, bitmapped block, GC...
+* What if allocation depends on user input?
+* Pre-allocate a pool
+* Roll your own free-list, bitmapped block, GC...
 
 <!--_footer: https://bitbashing.io/gc-for-systems-programmers.html-->
 <!--https://forum.dlang.org/post/tnajfjmvvyqardwhxegi@forum.dlang.org-->
@@ -876,3 +887,9 @@ struct Context
 -----------------------------------------------------------
 <!--_header: ''-->
 <video src="img/RC.mp4"></video>
+-----------------------------------------------------------
+
+### 4. Null garbage collection
+![Image height:500](img/walter-null-gc.png)
+
+<!--_footer: https://youtu.be/bNJhtKPugSQ?si=z-USHbQyKkhrlH9c&t=579 -->

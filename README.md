@@ -1,6 +1,11 @@
 # [DConf 2024](https://dconf.org/2024/#dennisk)
 
+
 ### Avoid the Garbage Collector in 80 Lines
+
+Slides (html): [dkorpel.github.io/dconf](https://dkorpel.github.io/dconf)
+
+References:
 
 - [PCG-ranndom -  M.E. O'Neill](https://www.pcg-random.org/)
 - [Untangling Lifetimes: The Arena Allocator - Ryan Fleury](https://www.rfleury.com/p/untangling-lifetimes-the-arena-allocator)
