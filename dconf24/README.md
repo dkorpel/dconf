@@ -1,3 +1,8 @@
+## Code examples
+
+These are code examples accompanying the presentation.
+
+
 ### allocator.d
 
 This is the file that you need to import to start using the `Arena` allocator and the `Allocator` interface.

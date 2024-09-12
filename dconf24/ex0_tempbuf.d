@@ -6,6 +6,7 @@ void main() @safe
 {
     Arena a;
     Allocator alloc = a.alloc;
+
     int[] arr = alloc.array!int(100);
     arr[0] = 3;
 }
