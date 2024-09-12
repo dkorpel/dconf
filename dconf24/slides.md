@@ -593,7 +593,7 @@ void main()
 {
     auto a = Arena();
 
-    char[] path = environmentGet(buf, &a);
+    char[] path = environmentGet("PATH", &a);
 
     writeln(path);
 
@@ -619,12 +619,15 @@ struct Arena
 struct ArenaPage
 {
     ArenaPage* previous;
+    // variable number of bytes follow
 }
 ```
 
 -----------------------------------------------------------
+
   <style>
     svg {
+      font-family: monospace;
       display: block;
       margin: 0 auto;
       width: 80%;
@@ -643,58 +646,76 @@ struct ArenaPage
       stroke-width: 1;
     }
 
+    .allocation-fail {
+      fill: none;
+      stroke: #811;
+      stroke-dasharray: 8;
+      stroke-width: 1;
+    }
+
     .arrow {
       fill: none;
-      stroke: #111;;
+      stroke: #111;
       stroke-width: 2;
     }
   </style>
 
-<svg viewBox="0 0 600 600">
+<svg viewBox="0 0 580 480">
 
-  <g class="memory-arena" data-marpit-fragment="1">
-    <rect x="50" y="50" width="500" height="200" />
-    <text x="270" y="40" font-size="16">Arena 2</text>
+  <g>
+    <rect class="memory-arena" x="50" y="50" width="120" height="150" />
+    <text x="50" y="40" font-size="16">Stack buffer</text>
   </g>
 
-  <!-- Allocations in the second arena -->
+  <g data-marpit-fragment="1">
+    <rect class="allocation" x="60" y="60" width="100" height="50" />
+  </g>
   <g class="allocation" data-marpit-fragment="2">
-    <rect x="60" y="70" width="100" height="50" />
-    <text x="70" y="100" font-size="12">Alloc A</text>
+    <rect class="allocation" x="60" y="110" width="100" height="40" />
   </g>
-  <g class="allocation" data-marpit-fragment="3">
-    <rect x="60" y="130" width="100" height="50" />
-    <text x="70" y="160" font-size="12">Alloc B</text>
-  </g>
-  <g class="allocation" data-marpit-fragment="4">
-    <rect x="60" y="190" width="100" height="50" />
-    <text x="70" y="220" font-size="12">Alloc C</text>
+  <g class="allocation-fail" data-marpit-fragment="3">
+    <rect class="allocation-fail" x="60" y="150" width="100" height="80" />
   </g>
 
-  <!-- Arrow pointing to the first arena -->
-  <g class="arrow" data-marpit-fragment="5">
-    <line x1="300" y1="250" x2="300" y2="350" />
-    <polygon points="290,350 310,350 300,370" />
+  <g data-marpit-fragment="4">
+    <text x="50" y="270" font-size="16">malloc()</text>
+    <rect class="memory-arena" x="50" y="280" width="120" height="150" />
+    <rect class="allocation" x="60" y="290" width="100" height="20">
+        <animate attributeName="x" begin="0s" dur="8s" from="10" to="300" fill="freeze" />
+    </rect>
+    <text x="70" y="304" font-size="12">null</text>
+  </g>
+  <g class="allocation" data-marpit-fragment="5">
+    <rect class="allocation" x="60" y="310" width="100" height="80" />
+  </g>
+  <g class="allocation-fail" data-marpit-fragment="6">
+    <rect class="allocation-fail" x="60" y="390" width="100" height="60" />
   </g>
 
-  <!-- First Arena -->
-  <g class="memory-arena" data-marpit-fragment="6">
-    <rect x="50" y="400" width="500" height="200" />
-    <text x="270" y="390" font-size="16">Arena 1</text>
+  <g data-marpit-fragment="6">
+    <text x="210" y="270" font-size="16">malloc()</text>
+    <rect class="memory-arena" x="200" y="280" width="120" height="190" />
+    <rect class="allocation" x="210" y="290" width="100" height="20" />
+    <text x="220" y="304" font-size="12">0x7820A8</text>
+    <line class="arrow" x1="160" y1="299" x2="210" y2="299" />
+    <text x="160" y="304" font-size="16"><</text>
   </g>
 
-  <!-- Allocations in the first arena -->
   <g class="allocation" data-marpit-fragment="7">
-    <rect x="60" y="420" width="100" height="50" />
-    <text x="70" y="450" font-size="12">Alloc 1</text>
+    <rect x="210" y="310" width="100" height="60" />
   </g>
+
   <g class="allocation" data-marpit-fragment="8">
-    <rect x="170" y="480" width="150" height="50" />
-    <text x="180" y="510" font-size="12">Alloc 2</text>
+    <rect x="210" y="310" width="100" height="60" />
   </g>
-  <g class="allocation" data-marpit-fragment="9">
-    <rect x="330" y="540" width="200" height="50" />
-    <text x="340" y="570" font-size="12">Alloc 3</text>
+
+  <g data-marpit-fragment="9">
+    <text x="360" y="270" font-size="16">malloc()</text>
+    <rect class="memory-arena" x="350" y="280" width="120" height="140" />
+    <rect class="allocation" x="360" y="290" width="100" height="20" />
+    <text x="370" y="304" font-size="12">0x741BB0</text>
+    <line class="arrow" x1="310" y1="299" x2="360" y2="299" />
+    <text x="310" y="304" font-size="16"><</text>
   </g>
 </svg>
 
