@@ -31,7 +31,7 @@ struct IntStrings
 		s++;
 	}
 
-	bool empty() scope => (s >= e);
+	bool empty() scope => s >= e;
 }
 
 

@@ -15,7 +15,7 @@ struct Array(T)
         this.alloc = alloc;
     }
 
-    auto opOpAssign(string op : "~")(T value)
+    auto opOpAssign(string op : "~")(T value) @trusted
     {
         if (payload.length == capacity)
         {

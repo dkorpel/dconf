@@ -2,9 +2,8 @@
 This example shows how an arena can be given a stack buffer
 for small size optimization, similar to existing alternatives:
 
-- `toCStringThen` in dmd
-- `TempCBuffer` in Phobos
-
+- dmd.common.string: SmallBuffer
+- std.internal.string: tempCString
 
 */
 module dconf24.ex3_stringz;

@@ -21,9 +21,9 @@ Dennis Korpel
 <!--_paginate: skip-->
 -----------------------------------------------------------
 # Garbage Collection
-Memory is automatically managed by occasionally pausing all threads and scanning for memory still in use, and freeing the rest.*
+Memory is automatically managed by occasionally pausing all threads and scanning for memory still in use, and freeing the rest.<span data-marpit-fragment="1">*</span>
 
-<!--_footer: ∗we'll get back to this-->
+<!--_footer: \\*we'll get back to this-->
 
 -----------------------------------------------------------
 # Phobos API
@@ -76,10 +76,8 @@ Thank you Garbage Collector, for the ergonomics you provide 👍
 ```D
 string environmentGet(string key, return scope Allocator alloc = gc)
 {
-    int n = GetEnvironmentVariableA(key.ptr, null, 0);
-    char[] buf = alloc.array!char(n);
-    GetEnvironmentVariableA(key.ptr, buf.ptr, buf.length);
-    return buf[0 .. n];
+    // return new char[length];
+    return alloc.array!char(length);
 }
 
 void printPath()
@@ -105,7 +103,7 @@ void printPath()
 * On simplicity
 * 6 suboptimal `@nogc` approaches
 * The 80 line solution
-* ~~DIP1000~~ scoped pointers status update
+* Bonus: ~~DIP1000~~ scoped pointers status update
 
 -----------------------------------------------------------
 ![bg sepia](img/bg.png)
@@ -125,8 +123,9 @@ void printPath()
 # Controversy
 
 * Always about those darn pauses
+  * Write gates?
+  * Reference Counting better for real-time?
 * I find myself on neither side of the debate
-* Reference Counting better for real-time?
 
 -----------------------------------------------------------
 ### (Automatic) Reference counting
@@ -168,9 +167,16 @@ void audioCallback(float[] buffer)
 -----------------------------------------------------------
 # Garbage collector comes!
 
+<span data-marpit-fragment="1">
+
 ![Image](img/dennis-garbage-truck.png)
 
+</span>
+<span data-marpit-fragment="2">
+
 Takes several ms to collect
+
+</span>
 
 -----------------------------------------------------------
 # Deadline missed?
@@ -213,7 +219,15 @@ Takes several ms to collect
 ### 1960s: Linear Congruential Random
 
 ![bg](img/random-noise.png)
+
+<span data-marpit-fragment="1">
+
 $X_{n+1} = \left( a X_n + c \right)\bmod m$
+
+</span>
+
+<span data-marpit-fragment="2">
+
 ```D
 int seed = 1;
 int RANDU()
@@ -223,10 +237,18 @@ int RANDU()
 }
 ```
 
+</span>
+
 <!--_footer: https://en.wikipedia.org/wiki/RANDU-->
 
 -----------------------------------------------------------
+<!--_color: white-->
+
+<span data-marpit-fragment="1">
+
 # <!--fit--> MERSENNE TWISTER
+
+</span>
 
 <!--_header: ''-->
 ![bg](img/twister.png)
@@ -238,6 +260,7 @@ int RANDU()
 <!--_footer: Visualization by Cmglee, CC-BY-SA-3.0: https://commons.wikimedia.org/wiki/File:Mersenne_Twister_visualisation.svg-->
 -----------------------------------------------------------
 ### 1997: MERSENNE TWISTER
+* Solved problems with other PRNGs
 * Default PRNG Excel, Matlab, GNU octave
 * And Phobos (`MersenneTwisterEngine` in `std.random`)
 * Fails TestU01 statistical tests (2007)
@@ -281,7 +304,7 @@ uint randomPcg32(ref ulong seed)
 }
 ```
 
-(`std.random` is 4000 lines)
+<span data-marpit-fragment="1">(`std.random` is 4000 lines)</span>
 
 -----------------------------------------------------------
 
@@ -315,14 +338,15 @@ uint randomPcg32(ref ulong seed)
 -----------------------------------------------------------
 ### GC complexity
 
-* Simple for the user
-* 7000 line implementation in druntime
-* Centralized, needs to know everything
-* Platform specific details
-
-![Image height:300](img/gc-connections.png)
-
-<!--_footer: https://github.com/dlang/dmd/tree/master/druntime/src/core/internal/gc-->
+* Simple to use
+* Complex to implement
+  * Druntime dependency
+  * Non-portable
+  * Type info / pointer bitmaps
+* Issues can arise:
+  * (Shared) libraries
+  * No WebAssembly implementation (yet)
+  * False pointers
 
 -----------------------------------------------------------
 ![bg sepia](img/bg.png)
@@ -626,23 +650,29 @@ struct ArenaPage
 -----------------------------------------------------------
 
   <style>
-    svg {
+    .svg-diagram {
       font-family: monospace;
       display: block;
       margin: 0 auto;
-      width: 80%;
-      height: auto;
+      width: auto;
+      height: 90%;
     }
 
     .memory-arena {
       fill: none;
-      stroke: #111;;
-      stroke-width: 2;
+      stroke: #333;
+      stroke-width: 1;
+    }
+
+    .arena-struct {
+      fill: #cef;
+      stroke: #333;
+      stroke-width: 1;
     }
 
     .allocation {
       fill: #EED;
-      stroke: #111;
+      stroke: #333;
       stroke-width: 1;
     }
 
@@ -655,12 +685,21 @@ struct ArenaPage
 
     .arrow {
       fill: none;
-      stroke: #111;
+      stroke: #777;
       stroke-width: 2;
     }
+
+    .dash-line {
+      fill: none;
+      stroke: #777;
+      stroke-width: 2;
+      stroke-dasharray: 8;
+    }
+
+
   </style>
 
-<svg viewBox="0 0 580 480">
+<svg class="svg-diagram" viewBox="0 0 680 500">
 
   <g>
     <rect class="memory-arena" x="50" y="50" width="120" height="150" />
@@ -669,77 +708,134 @@ struct ArenaPage
 
   <g data-marpit-fragment="1">
     <rect class="allocation" x="60" y="60" width="100" height="50" />
+    <text x="70" y="80" font-size="12">D3CCA32C</text>
+    <text x="70" y="90" font-size="12">5DCA0528</text>
+    <text x="70" y="100" font-size="12">0B382238</text>
   </g>
-  <g class="allocation" data-marpit-fragment="2">
+  <g data-marpit-fragment="2">
     <rect class="allocation" x="60" y="110" width="100" height="40" />
+    <text x="70" y="130" font-size="12">7D906630</text>
+    <text x="70" y="140" font-size="12">BD79AE22</text>
   </g>
-  <g class="allocation-fail" data-marpit-fragment="3">
+  <g data-marpit-fragment="3">
     <rect class="allocation-fail" x="60" y="150" width="100" height="80" />
   </g>
 
   <g data-marpit-fragment="4">
     <text x="50" y="270" font-size="16">malloc()</text>
     <rect class="memory-arena" x="50" y="280" width="120" height="150" />
-    <rect class="allocation" x="60" y="290" width="100" height="20">
-        <animate attributeName="x" begin="0s" dur="8s" from="10" to="300" fill="freeze" />
-    </rect>
+    <rect class="allocation" x="60" y="290" width="100" height="20"/>
     <text x="70" y="304" font-size="12">null</text>
   </g>
-  <g class="allocation" data-marpit-fragment="5">
+  <g data-marpit-fragment="5">
     <rect class="allocation" x="60" y="310" width="100" height="80" />
+    <text x="70" y="330" font-size="12">7D906630</text>
+    <text x="70" y="340" font-size="12">BD79AE22</text>
+    <text x="70" y="350" font-size="12">62B4D675</text>
+    <text x="70" y="360" font-size="12">8D475B4C</text>
+    <text x="70" y="370" font-size="12">2F4890E8</text>
+    <text x="70" y="380" font-size="12">E33D4B24</text>
   </g>
-  <g class="allocation-fail" data-marpit-fragment="6">
+  <g data-marpit-fragment="6">
     <rect class="allocation-fail" x="60" y="390" width="100" height="60" />
   </g>
 
   <g data-marpit-fragment="6">
     <text x="210" y="270" font-size="16">malloc()</text>
-    <rect class="memory-arena" x="200" y="280" width="120" height="190" />
+    <rect class="memory-arena" x="200" y="280" width="120" height="130" />
     <rect class="allocation" x="210" y="290" width="100" height="20" />
     <text x="220" y="304" font-size="12">0x7820A8</text>
     <line class="arrow" x1="160" y1="299" x2="210" y2="299" />
-    <text x="160" y="304" font-size="16"><</text>
+    <text class="arrow" x="160" y="304" font-size="16"><</text>
   </g>
 
-  <g class="allocation" data-marpit-fragment="7">
-    <rect x="210" y="310" width="100" height="60" />
+  <g data-marpit-fragment="7">
+    <rect class="allocation" x="210" y="310" width="100" height="60" />
+    <text x="220" y="330" font-size="12">5B4C8D47</text>
+    <text x="220" y="340" font-size="12">90E82F48</text>
+    <text x="220" y="350" font-size="12">4B24E33D</text>
+    <text x="220" y="360" font-size="12">2F4890E8</text>
   </g>
 
-  <g class="allocation" data-marpit-fragment="8">
-    <rect x="210" y="310" width="100" height="60" />
-  </g>
-
-  <g data-marpit-fragment="9">
+  <g data-marpit-fragment="8">
     <text x="360" y="270" font-size="16">malloc()</text>
-    <rect class="memory-arena" x="350" y="280" width="120" height="140" />
+    <rect class="memory-arena" x="350" y="280" width="120" height="210" />
     <rect class="allocation" x="360" y="290" width="100" height="20" />
     <text x="370" y="304" font-size="12">0x741BB0</text>
     <line class="arrow" x1="310" y1="299" x2="360" y2="299" />
-    <text x="310" y="304" font-size="16"><</text>
+    <text class="arrow" x="310" y="304" font-size="16"><</text>
+  </g>
+  <g data-marpit-fragment="9">
+    <rect class="allocation" x="360" y="310" width="100" height="80" />
+    <text x="370" y="330" font-size="12">475B4C8D</text>
+    <text x="370" y="340" font-size="12">4890E82F</text>
+    <text x="370" y="350" font-size="12">3D4B24E3</text>
+    <text x="370" y="360" font-size="12">E82F4890</text>
+    <text x="370" y="370" font-size="12">F4E82890</text>
+    <text x="370" y="380" font-size="12">0E82F489</text>
+  </g>
+
+  <g data-marpit-fragment="10">
+    <rect class="allocation" x="360" y="390" width="100" height="30" />
+    <text x="370" y="410" font-size="12">82F4890E</text>
+  </g>
+
+  <g data-marpit-fragment="11">
+    <text x="560" y="270" font-size="16">Arena</text>
+    <rect class="arena-struct" x="550" y="280" width="120" height="80" />
+    <rect class="allocation" x="560" y="290" width="100" height="20" />
+    <rect class="allocation" x="560" y="310" width="100" height="40" />
+    <text x="570" y="304" font-size="12">page</text>
+    <text x="570" y="324" font-size="12">buffer</text>
+    <line class="arrow" x1="460" y1="299" x2="560" y2="299" />
+    <text class="arrow" x="460" y="304" font-size="16"><</text>
+    <line class="arrow" x1="460" y1="420" x2="560" y2="330" />
+    <line class="arrow" x1="460" y1="480" x2="560" y2="330" />
+    <line class="dash-line" x1="460" y1="480" x2="460" y2="420" />
+
   </g>
 </svg>
-
------------------------------------------------------------
-
-![Image](img/arena-diagram.png)
 
 -----------------------------------------------------------
 # Small buffer optimization
 
 ```D
-void main()
+void heap()
+{
+    Arena a;
+    ubyte[] res = a.allocate(100); // heap allocates
+}
+
+void stack()
 {
     ubyte[512] buf = void;
     Arena a = Arena(buf[]);
-
-    a.alloc.array!float(100); // use stack memory
-    a.alloc.array!float(100); // only now it calls malloc
+    ubyte[] res = a.allocate(100); // uses stack buffer
 }
 ```
 
 <!--_footer: See example ex3_stringz.d-->
 
 -----------------------------------------------------------
+
+## Allocator interface
+
+* Arena could be passed around by `ref` or pointer
+* But we want something easy and extensible
+
+```D
+abstract class Allocator
+{
+    ubyte[] allocate(size_t size, size_t alignment);
+}
+
+class Arena : Allocator;
+class GcAllocator : Allocator;
+class FailAllocator : Allocator;
+```
+
+-----------------------------------------------------------
+
 ```D
 struct Allocator
 {
@@ -748,31 +844,72 @@ struct Allocator
 
 struct AllocatorBase
 {
-    immutable AllocateFunction allocate;
+    immutable AllocFunc allocate;
 }
 
-alias AllocateFunction = ubyte[] function(size_t size, size_t alignment, scope void* context);
+alias AllocFunc = ubyte[] function(size_t size, size_t alignment, void* this_);
+
+struct Arena
+{
+    AllocatorBase base; // Old school struct inheritance
+    ubyte[] buffer;
+    ArenaPage* page;
+}
 ```
 
-Did you just re-invent classes and delegates?
-(Yes, for control and C compatibility)
+-----------------------------------------------------------
+
+### Why are you re-inventing classes?
+
+* No druntime dependency
+* Reduce redundant pointers
+* C compatibility
+* Implementing allocators is low-level anyway
 
 -----------------------------------------------------------
-# Hannah Montana functions
+
+```D
+struct Arena
+{
+    Allocator alloc() return => Allocator(&this);
+}
+
+struct Allocator
+{
+    AllocatorBase* base;
+
+    T[] array(T)(size_t length) => cast(T[]) base.allocate(length);
+}
+
+void main()
+{
+    Arena a;
+    float[] arr = a.alloc.array!float(128);
+}
+```
+
+-----------------------------------------------------------
+# Allocator parameter
+
+<span data-marpit-fragment="1">
+
+Notice the default argument ⬇️
+
+</span>
 
 ```D
 string environmentGet(string name, Allocator alloc = gc)
 {
-    char[] buf = alloc.array!char(1024);
-    // Call OS function
-    return buf[0 .. n];
+    char[] buf = alloc.array!char(32768);
+
+    // const n = GetEnvironmentVariableA(name.toStringz, buf.ptr, buf.length);
+
+    return cast(immutable) buf[0 .. n];
 }
 ```
 
-- Convenient default argument
-
 -----------------------------------------------------------
-# Hannah Montana functions
+## "Hannah Montana functions"
 
 ```D
 void main()
@@ -784,7 +921,11 @@ void main()
 }
 ```
 
-- Best of both worlds!
+<span data-marpit-fragment="1">
+
+🎤 Best of both worlds!
+
+</span>
 
 -----------------------------------------------------------
 # Safety
@@ -801,22 +942,6 @@ void main() @safe
 
     Arena a;
     global = environmentGet("PATH", a.alloc); // Error
-}
-```
------------------------------------------------------------
-# Safety
-
-```D
-struct Arena
-{
-    Allocator alloc() return => Allocator(&this);
-}
-
-struct Allocator
-{
-    AllocatorBase* x;
-
-    T[] array(T)(size_t length) return scope => cast(T[]) x.allocate(length);
 }
 ```
 
@@ -859,12 +984,12 @@ void main() @safe
 -----------------------------------------------------------
 # Overhead?
 
-* GC also has 2-3x overhead...
+* GC has its own overhead
 * Use memory mapping instead of linked list
-* Reserve GB for Arena
+* Reserve gigabyte for Arena
 * Lazily commit pages
 
-![bg right height:600](img/memory-mapping.png)
+![bg right:35% height:500](img/memory-mapping.png)
 
 -----------------------------------------------------------
 # Resources
@@ -877,66 +1002,73 @@ void main() @safe
   - [Arenas and the almighty concatenation operator](https://nullprogram.com/blog/2024/05/25/)
 
 -----------------------------------------------------------
-## Concatenation
-
-```D
-struct Person
-{
-    string name, surname;
-    string toString() const => name ~ " " ~ surname;
-}
-
-void main()
-{
-    char[] s = "Hello " ~ Person("Dennis", "Korpel").toString() ~ "!";
-}
-
-// "Dennis "
-// "Dennis Korpel"
-// "Hello Dennis Korpel"
-// "Hello Dennis Korpel!"
-```
-
------------------------------------------------------------
-## Aftermath
+## Usage in my own code
 
 * Deleted tons of destructors and `free()` calls
 * Deleted `ScopeArray` and `Appender`
   * (just need `Array`)
 * It only gets better
+  * generalizes to other scenarios
 
 -----------------------------------------------------------
-## GPU memory
+### GPU Memory mapping
 
-- No near/far pointers, no Phobos/Tango
-
------------------------------------------------------------
 ```D
-GlBuffer buffer = GlBuffer(1000); // glBufferSubdata
-GameState game;
+void copying()
+{
+    float[] data;
+    data ~= 3.0;
+    data ~= 4.0;
+    glBufferSubData(buffer, data);
+}
+
+void memoryMapping()
+{
+    float[] data = glMapBufferRange(buffer, 2 * float.sizeof);
+    data[0] = 3.0;
+    data[1] = 4.0;
+    glUnmapBuffer(buffer);
+}
+```
+
+-----------------------------------------------------------
+
+### GPU Memory mapping
+* map ⋍ alloc, unmap ⋍ free
+```D
+{
+    auto mapper = Mapper(buffer, 2); // Arena
+    float[] mappedBuffer = mapper[];
+
+    auto data = Array!float(mappedBuffer, failAllocator);
+    data ~= 3.0;
+    data ~= 4.0;
+
+    // mapper.~this() unmaps
+}
+```
+
+-----------------------------------------------------------
+
+```D
+GlBuffer buffer;
 while (1)
 {
-    game.update(pollInput());
+    gameStep();
 
     {
-        auto mapper = Mapper(buffer);
-        auto drawBuffer = Array!float(gpuMem[], failAllocator);
+        auto mapper = Mapper(buffer, 2); // Arena
+        float[] mappedBuffer = mapper[];
 
-        game.draw(drawBuffer);
+        auto data = Array!float(mappedBuffer, failAllocator);
+        data ~= 3.0;
+        data ~= 4.0;
         // mapper.~this() unmaps
     }
 
     glDrawArrays(buffer);
 }
 ```
------------------------------------------------------------
-### The good and the bad
-
-| Do 😎                    | Don't ☹️                     |
-|--------------------------|------------------------------|
-| Free big chunks          | Pair each malloc ⟺ free    |
-| Free at end of scope     | Manually call free          |
-| Return simple values     | Be annoying to call        |
 
 -----------------------------------------------------------
 
@@ -951,10 +1083,13 @@ while (1)
 -----------------------------------------------------------
 # Ugly signatures
 
-- Parameter passing
+Parameter passing
 
 ```D
 string environmentGet(string name);
+
+// vs
+
 string environmentGet(string name, return scope Allocator alloc = gc);
 ```
 
@@ -962,7 +1097,7 @@ string environmentGet(string name, return scope Allocator alloc = gc);
 
 ### Context struct
 
-- Language feature of Odin and Jai
+Language feature of Jai and Odin
 ```
 main :: proc()
 {
@@ -999,24 +1134,6 @@ struct Context
 
 -----------------------------------------------------------
 
-### D
-
-```D
-Arena tempArena;
-
-void main()
-{
-    while (!shouldClose)
-    {
-        pollInput();
-        update();
-        draw();
-        tempArena.clear();
-    }
-}
-```
-
------------------------------------------------------------
 ![bg sepia](img/bg.png)
 <!--_header: ''-->
 ## Wrapping up
@@ -1027,11 +1144,9 @@ void main()
 
 * Refactored `dmd/escape.d` this year
 * Number of `if` statements 310 ⇒ 240
-* `scope` inference of `std.array: array` fixed
-* `ref` locals help
 * Nested functions + `scope` still broken
 * Confusing `return scope` syntax still here
-  * `retref` and `retscope`?
+* `scope` inference still needs work
 * Want partial / transitive scope for structs
 
 -----------------------------------------------------------
@@ -1045,6 +1160,16 @@ void main()
   * Otherwise it's `@system`/`@trusted`
 
 -----------------------------------------------------------
+### The good and the bad
+
+| Do 😎                    | Don't ☹️                     |
+|--------------------------|------------------------------|
+| Free big chunks          | Pair each malloc ⟺ free    |
+| Free at end of scope     | Manually call free          |
+| Return simple values     | Be annoying to call        |
+
+-----------------------------------------------------------
+
 ### Takeaways
 * GC avoidance should be intentional
 * Provide convenient defaults
@@ -1094,9 +1219,6 @@ struct Context
 * `return scope` vs. `scope return` still here
 * Inference by default would help
 * `ret&` and `retscope`?
------------------------------------------------------------
-<!--_header: ''-->
-<video src="img/RC.mp4"></video>
 
 -----------------------------------------------------------
 
@@ -1120,3 +1242,41 @@ struct Context
 
 <!--_footer: https://bitbashing.io/gc-for-systems-programmers.html-->
 <!--https://forum.dlang.org/post/tnajfjmvvyqardwhxegi@forum.dlang.org-->
+
+-----------------------------------------------------------
+## Concatenation
+
+```D
+struct Person
+{
+    string name, surname;
+    string toString() const => name ~ " " ~ surname;
+}
+
+void main()
+{
+    char[] s = "Hello " ~ Person("Dennis", "Korpel").toString() ~ "!";
+}
+
+// "Dennis "
+// "Dennis Korpel"
+// "Hello Dennis Korpel"
+// "Hello Dennis Korpel!"
+```
+
+-----------------------------------------------------------
+```
+string environmentGet(string key, return scope Allocator alloc = gc)
+{
+    //int n = GetEnvironmentVariableA(key.ptr, null, 0);
+    char[] buf = alloc.array!char(n);
+    //GetEnvironmentVariableA(key.ptr, buf.ptr, buf.length);
+    return buf[0 .. n];
+}
+```
+-----------------------------------------------------------
+### GC complexity
+
+![Image height:480](img/gc-connections.png)
+
+<!--_footer: https://github.com/dlang/dmd/tree/master/druntime/src/core/internal/gc-->
