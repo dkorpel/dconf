@@ -18,7 +18,7 @@ math: mathjax
 Dennis Korpel
 <!--_header: DConf'24 London - September 17 2024-->
 <!--_footer: -->
-<!--_paginate: skip-->
+<!--_paginate: hide-->
 -----------------------------------------------------------
 # Garbage Collection
 Memory is automatically managed by occasionally pausing all threads and scanning for memory still in use, and freeing the rest.<span data-marpit-fragment="1">*</span>
@@ -51,14 +51,15 @@ void printPath()
 ```
 -----------------------------------------------------------
 # Conclusion
-Thank you Garbage Collector, for the ergonomics you provide 👍
+Good thing D has a Garbage Collector 👍
 
 -----------------------------------------------------------
 # Except...
 
-* Scenarios where you can’t use GC
+* Some people don't like the GC
 * I tried `@nogc` approaches so you don’t have to!
-* Often awkward, until epiphany:
+* Often awkward
+  * until epiphany:
 * `@safe @nogc` allocator in just 80 lines
 * Built on top of `malloc` and `free`
 
@@ -66,11 +67,9 @@ Thank you Garbage Collector, for the ergonomics you provide 👍
 ![Image height:500](img/tqdc.png)
 
 -----------------------------------------------------------
-<h1 style="color:white">Spoiler</h1>
+<h1 style="color:white">BLUF (bottom line up front)</h1>
 
 ![bg](img/allocator-code.png)
-
-<!--_header: ''-->
 
 -----------------------------------------------------------
 ```D
@@ -80,22 +79,26 @@ string environmentGet(string key, return scope Allocator alloc = gc)
     return alloc.array!char(length);
 }
 
-void printPath()
+void main()
 {
     Arena a;
+
     string s = environmentGet("PATH", a.alloc);
     writeln(s);
+    writeln(environmentGet("TMP", a.alloc));
+
     // a.~this();
 }
 ```
 <!--_footer: https://github.com/dkorpel/dconf/blob/master/dconf24/allocator.d-->
 
 -----------------------------------------------------------
+
 # Whoami
 * Msc. Computer Science from TU Delft
 * Part time Issue Manager for D Language Foundation
 * Part time D programmer at SARC
-* DConf'23: talk about safe stack memory
+* DConf'23 talk about safe stack memory
 
 -----------------------------------------------------------
 # Coming up
@@ -109,23 +112,17 @@ void printPath()
 ![bg sepia](img/bg.png)
 <!--_header: ''-->
 # ♻️ On GC avoidance
-<!--_paginate: skip-->
+<!--_paginate: hide-->
 
 -----------------------------------------------------------
 
-# GC Phobia
+# The GC is controversial
 
-![Image height:250](img/newsgroup-gc-phobia.png)
-<!--_footer: https://forum.dlang.org/post/mailman.147.1702920162.3719.digitalmars-d-learn@puremagic.com-->
-
------------------------------------------------------------
-
-# Controversy
-
-* Always about those darn pauses
-  * Write gates?
-  * Reference Counting better for real-time?
 * I find myself on neither side of the debate
+* "GC makes D bad for real-time apps"
+* "But there's `@nogc`"
+* "But then you lose most of Phobos"
+* Perhaps use Reference Counting in Phobos?
 
 -----------------------------------------------------------
 ### (Automatic) Reference counting
@@ -148,7 +145,9 @@ struct RefCountedString {
 }
 ```
 -----------------------------------------------------------
-### Example: Audio programming
+### Example: 🎹 Audio programming
+
+<span data-marpit-fragment="1">
 
 ```D
 float phase = 0;
@@ -163,6 +162,9 @@ void audioCallback(float[] buffer)
 }
 ```
 48 Khz sample rate, 10 ms latency ⇒ 480 samples
+
+</span>
+
 <!--Callback needs to compute 480 samples with a strict deadline-->
 -----------------------------------------------------------
 # Garbage collector comes!
@@ -172,18 +174,13 @@ void audioCallback(float[] buffer)
 ![Image](img/dennis-garbage-truck.png)
 
 </span>
-<span data-marpit-fragment="2">
-
-Takes several ms to collect
-
-</span>
 
 -----------------------------------------------------------
 # Deadline missed?
 * No, GC only pauses threads it knows
 * Audio thread is already detached
 * What if we want to load a sample in audioCallback?
-* `std.file` uses GC 😲
+* `std.stdio` uses GC 😲
 * But Reference Counting wouldn't have helped
 
 -----------------------------------------------------------
@@ -191,7 +188,6 @@ Takes several ms to collect
 
 ![bg right height:370](img/adc-principles.png)
 
-- No syscalls
 - No locks
 - No malloc
 - No file I/O
@@ -213,7 +209,7 @@ Takes several ms to collect
 ![bg sepia](img/bg.png)
 <!--_header: ''-->
 # 🧶 On simplicity
-<!--_paginate: skip-->
+<!--_paginate: hide-->
 
 -----------------------------------------------------------
 ### 1960s: Linear Congruential Random
@@ -260,7 +256,7 @@ int RANDU()
 <!--_footer: Visualization by Cmglee, CC-BY-SA-3.0: https://commons.wikimedia.org/wiki/File:Mersenne_Twister_visualisation.svg-->
 -----------------------------------------------------------
 ### 1997: MERSENNE TWISTER
-* Solved problems with other PRNGs
+* Solved problems of earlier PRNGs
 * Default PRNG Excel, Matlab, GNU octave
 * And Phobos (`MersenneTwisterEngine` in `std.random`)
 * Fails TestU01 statistical tests (2007)
@@ -275,11 +271,7 @@ int RANDU()
 <!--_footer: https://www.pcg-random.org/-->
 
 -----------------------------------------------------------
-### 2014: PCG Random
-
-- 64 bit seed, 32 bit output
-- Most significant bits are most random
-- Use them to permute the bits
+### Just permute the LCG
 
 ```
 1011101000000010100100100010100010010011010000100010111111011001
@@ -291,7 +283,8 @@ int RANDU()
     10100100100010100010010][010000000 ---> output
 ```
 -----------------------------------------------------------
-### 2014: PCG Random
+
+### Easy to implement
 
 ```D
 uint randomPcg32(ref ulong seed)
@@ -304,8 +297,6 @@ uint randomPcg32(ref ulong seed)
 }
 ```
 
-<span data-marpit-fragment="1">(`std.random` is 4000 lines)</span>
-
 -----------------------------------------------------------
 
 > Anybody can come up with a a complex solution. A simple one takes genius. You know it's genius when others say: "phui, anyone could have done that!" Except that nobody did.
@@ -313,17 +304,9 @@ uint randomPcg32(ref ulong seed)
 -Walter Bright
 
 <!--_footer: https://forum.dlang.org/post/t2i7mg$22am$1@digitalmars.com-->
------------------------------------------------------------
-### std.experimental.allocator
-
-* Interface + composable building blocks
-* 20 000 lines of code 😲
-* Overkill for my purposes
-
-<!--_footer: https://dlang.org/phobos/std_experimental_allocator.html-->
 
 -----------------------------------------------------------
-### Reference Counting complexity
+### Reference Counting is complex
 
 
 * Spawns lots of language features
@@ -336,23 +319,23 @@ uint randomPcg32(ref ulong seed)
 <!--_footer: <audio src="img/RC.mp3" controls loop> -->
 
 -----------------------------------------------------------
-### GC complexity
+### GC is complex to implement
 
 * Simple to use
-* Complex to implement
+* Complex to implement *in systems language*
+  * Type info / pointer bitmaps
   * Druntime dependency
   * Non-portable
-  * Type info / pointer bitmaps
-* Issues can arise:
-  * (Shared) libraries
-  * No WebAssembly implementation (yet)
+* Issues can arise with:
   * False pointers
+  * Foreign languages
+  * WebAssembly (No implementation yet)
 
 -----------------------------------------------------------
 ![bg sepia](img/bg.png)
 <!--_header: ''-->
 ## ⚠️ 6 suboptimal @nogc solutions
-<!--_paginate: skip-->
+<!--_paginate: hide-->
 
 -----------------------------------------------------------
 ### 0. Manually free
@@ -367,7 +350,7 @@ void main()
 }
 ```
 
-- Clutters code (esp. unittests and scripts)
+Clutters code
 
 -----------------------------------------------------------
 ### 0. Manually free
@@ -452,7 +435,7 @@ void main()
 -----------------------------------------------------------
 ### 1. Don’t allocate
 
-- Voldemort Types can be annoying
+Voldemort Types can be annoying
 
 ```D
 import std.stdio, std.path;
@@ -471,16 +454,22 @@ void main()
 -----------------------------------------------------------
 ### 2. Stack memory
 
-- Automatically cleaned up
-- Can’t return it
+* Automatically cleaned up
+* Can’t return it
+
+<span data-marpit-fragment="2">
+
 ```D
 char[] environmentGet(string var)
 {
-    char[1024] buf = void;
+    char[32768] buf = void;
     // GetEnvironmentVariable(var, buf[]);
     return buf[]; // Error
 }
 ```
+
+</span>
+
 -----------------------------------------------------------
 ### 2. Stack memory
 
@@ -490,12 +479,10 @@ char[] environmentGet(string var)
 ```D
 void main()
 {
-    char[1024] buf;
+    char[32768] buf;
     const str = environmentGet("PATH", buf[]);
 }
 ```
-
-* Should lookup actual max size (32767 on Windows)
 
 -----------------------------------------------------------
 ### 3. OutputRanges / Appenders
@@ -534,10 +521,10 @@ void main()
 -----------------------------------------------------------
 ### 4. Null garbage collection
 
-- "Everybody thinks about garbage collection the wrong way" - Raymond Chen
-- Garbage collection is simulating a computer with an infinite amount of memory
-- Null garbage collector: never deallocate
-- Works if enough RAM
+* "Everybody thinks about garbage collection the wrong way" - Raymond Chen
+* Garbage collection is simulating a computer with an infinite amount of memory
+* Null garbage collector: never deallocate
+* Works if enough RAM
 
 <!--_footer: https://devblogs.microsoft.com/oldnewthing/20100809-00/?p=13203 -->
 
@@ -554,9 +541,8 @@ Amusing story from Kent Mitchell
 ### 4. Null garbage collection
 
 * DMD does this (unless `dmd -lowmem`)
-* "Out Of Memory" risk
-* Separate compilation required if not enough RAM
 * ctod does this for WebAssembly
+* "Out Of Memory" risk
 
 <!--_footer: https://dkorpel.github.io/ctod -->
 
@@ -629,7 +615,7 @@ void main()
 ![bg sepia](img/bg.png)
 <!--_header: ''-->
 # 🏟️ The 80 line solution
-<!--_paginate: skip-->
+<!--_paginate: hide-->
 -----------------------------------------------------------
 # Arenas
 
@@ -797,7 +783,7 @@ struct ArenaPage
 </svg>
 
 -----------------------------------------------------------
-# Small buffer optimization
+### Works with small buffer optimization
 
 ```D
 void heap()
@@ -818,10 +804,12 @@ void stack()
 
 -----------------------------------------------------------
 
-## Allocator interface
+## Allocator interface is flexible
 
 * Arena could be passed around by `ref` or pointer
 * But we want something easy and extensible
+
+<span data-marpit-fragment="2">
 
 ```D
 abstract class Allocator
@@ -833,6 +821,8 @@ class Arena : Allocator;
 class GcAllocator : Allocator;
 class FailAllocator : Allocator;
 ```
+
+</span>
 
 -----------------------------------------------------------
 
@@ -878,18 +868,19 @@ struct Allocator
 {
     AllocatorBase* base;
 
-    T[] array(T)(size_t length) => cast(T[]) base.allocate(length);
+    T[] array(T)(size_t length) =>
+        cast(T[]) base.allocate(T.sizeof * length);
 }
 
 void main()
 {
     Arena a;
-    float[] arr = a.alloc.array!float(128);
+    char[] str = a.alloc.array!char(128);
 }
 ```
 
 -----------------------------------------------------------
-# Allocator parameter
+## Allocator should have GC default
 
 <span data-marpit-fragment="1">
 
@@ -900,11 +891,7 @@ Notice the default argument ⬇️
 ```D
 string environmentGet(string name, Allocator alloc = gc)
 {
-    char[] buf = alloc.array!char(32768);
-
-    // const n = GetEnvironmentVariableA(name.toStringz, buf.ptr, buf.length);
-
-    return cast(immutable) buf[0 .. n];
+    return alloc.array!char(n);
 }
 ```
 
@@ -928,7 +915,7 @@ void main()
 </span>
 
 -----------------------------------------------------------
-# Safety
+# It can be `@safe`
 
 ```D
 // Requires `-preview=dip1000`
@@ -946,7 +933,7 @@ void main() @safe
 ```
 
 -----------------------------------------------------------
-# Dynamic arrays
+# It can be stored
 
 <!--_footer: See `dconf24/ex3_array.d`-->
 
@@ -966,7 +953,7 @@ struct Array(T)
 }
 ```
 -----------------------------------------------------------
-# Invalidation
+## No more invalidation problem
 
 <!--_footer: https://github.com/atilaneves/automem/issues/25-->
 ```D
@@ -980,14 +967,19 @@ void main() @safe
 }
 ```
 
-* Just don't invalidate inside a block scope 🙈
------------------------------------------------------------
-# Overhead?
+<span data-marpit-fragment="1">
 
-* GC has its own overhead
+Just don't invalidate inside a block scope 🙈
+
+</span>
+
+-----------------------------------------------------------
+### Overhead can be reduced
+
 * Use memory mapping instead of linked list
 * Reserve gigabyte for Arena
 * Lazily commit pages
+* But: non-portable
 
 ![bg right:35% height:500](img/memory-mapping.png)
 
@@ -1002,10 +994,32 @@ void main() @safe
   - [Arenas and the almighty concatenation operator](https://nullprogram.com/blog/2024/05/25/)
 
 -----------------------------------------------------------
-## Usage in my own code
+### Concatenation with arenas is efficient
+
+GC makes redundant allocations for text fragments
+```D
+import std.conv;
+
+string toString(float x, float y)
+{
+    return x.text ~ ", " ~ y.text;
+}
+```
+
+<!-- _footer: see ex5_appending.d-->
+
+<span data-marpit-fragment="1">
+
+Can be avoided with arenas!
+
+</span>
+
+-----------------------------------------------------------
+## It cleaned up my code
 
 * Deleted tons of destructors and `free()` calls
-* Deleted `ScopeArray` and `Appender`
+* Less `@trusted` annotations
+* Deleted `ScopeArray`, `Stack`, and `Appender`
   * (just need `Array`)
 * It only gets better
   * generalizes to other scenarios
@@ -1033,8 +1047,8 @@ void memoryMapping()
 
 -----------------------------------------------------------
 
-### GPU Memory mapping
-* map ⋍ alloc, unmap ⋍ free
+### map ⋍ alloc, unmap ⋍ free
+
 ```D
 {
     auto mapper = Mapper(buffer, 2); // Arena
@@ -1050,40 +1064,20 @@ void memoryMapping()
 
 -----------------------------------------------------------
 
-```D
-GlBuffer buffer;
-while (1)
-{
-    gameStep();
-
-    {
-        auto mapper = Mapper(buffer, 2); // Arena
-        float[] mappedBuffer = mapper[];
-
-        auto data = Array!float(mappedBuffer, failAllocator);
-        data ~= 3.0;
-        data ~= 4.0;
-        // mapper.~this() unmaps
-    }
-
-    glDrawArrays(buffer);
-}
-```
-
------------------------------------------------------------
-
 # But what about `@nogc`
 
-- Unlike `return scope` for lifetimes, there’s no `@inout_nogc`
-- DIPs for callback attributes still pending
-- Cheat: pretend it is `@nogc`
-- Hot take: `@nogc` should not be part of function type
-- Linting tool instead
+* There's `return scope`, but no `@inout_nogc`
+* DIPs for callback attributes still pending
+* Cheat: pretend it is `@nogc`
+* Hot take: `@nogc` should not be part of function type
+* Linting tool instead
+
+<!-- _footer: https://github.com/dlang/DIPs/pull/198-->
 
 -----------------------------------------------------------
 # Ugly signatures
 
-Parameter passing
+Clutter from long parameter declaration
 
 ```D
 string environmentGet(string name);
@@ -1095,7 +1089,7 @@ string environmentGet(string name, return scope Allocator alloc = gc);
 
 -----------------------------------------------------------
 
-### Context struct
+### Context struct could help
 
 Language feature of Jai and Odin
 ```
@@ -1137,7 +1131,7 @@ struct Context
 ![bg sepia](img/bg.png)
 <!--_header: ''-->
 ## Wrapping up
-<!--_paginate: skip-->
+<!--_paginate: hide-->
 
 -----------------------------------------------------------
 ### Scoped pointers status update
@@ -1152,7 +1146,7 @@ struct Context
 -----------------------------------------------------------
 ### Suggested GC strategy
 * Write code as if you have infinite memory
-* (Optimization for a known future is okay)
+  * (Optimization for a known future is okay)
 * _If_ you need to avoid the GC
   * Replace `new T[]` with `allocator.array!T`
   * Place `Arena` / `Allocator` where needed
@@ -1160,33 +1154,25 @@ struct Context
   * Otherwise it's `@system`/`@trusted`
 
 -----------------------------------------------------------
-### The good and the bad
-
-| Do 😎                    | Don't ☹️                     |
-|--------------------------|------------------------------|
-| Free big chunks          | Pair each malloc ⟺ free    |
-| Free at end of scope     | Manually call free          |
-| Return simple values     | Be annoying to call        |
-
------------------------------------------------------------
 
 ### Takeaways
-* GC avoidance should be intentional
-* Provide convenient defaults
-* Use {} block scopes instead of calls to `free()`
-* Extract destructors from parameters / fields
+* Look for simple solutions
+* Calling `free()` is not `@safe`
+* End-of-scope cleanup is `@safe` with `scope`
 * (IMO) `@nogc` should not be part of function type
 
 -----------------------------------------------------------
 ![bg](img/title.jpg)
-# The end
+### Avoid the Garbage Collector in 80 slides
 
-<!--_paginate: skip-->
+Dennis Korpel
 
-<p style="font-size: 16px; font-family:arial">
-Image credits:
-- Missile by Marcus Burns: https://commons.wikimedia.org/w/index.php?curid=120217981, CC BY 3.0
-</p>
+<!--_paginate: hide-->
+
+<!--
+### Image credits:
+- [Missile](https://commons.wikimedia.org/w/index.php?curid=120217981) by Marcus Burns, CC BY 3.0
+-
 
 -----------------------------------------------------------
 ### Quite Okay Formats
@@ -1195,7 +1181,7 @@ Image credits:
 - Similar to PNG / MP3
 - Encoder / decoder are 400 lines
 
-<!--_footer: https://qoiformat.org/-->
+<!- -_footer: https://qoiformat.org/- ->
 
 -----------------------------------------------------------
 ## Partial / transitive scope
@@ -1225,13 +1211,7 @@ struct Context
 ### 4. Null garbage collection
 ![Image height:500](img/walter-null-gc.png)
 
-<!--_footer: https://youtu.be/bNJhtKPugSQ?si=z-USHbQyKkhrlH9c&t=579 -->
------------------------------------------------------------
-## Context struct
-
-![Image height:500](img/jblow-context.png)
-
-<!--_footer: https://youtu.be/uZgbKrDEzAs?si=clQT4OAd4j66KJ8i&t=2303-->
+<!- -_footer: https://youtu.be/bNJhtKPugSQ?si=z-USHbQyKkhrlH9c&t=579 - ->
 
 -----------------------------------------------------------
 # Unpredictable lifetimes
@@ -1240,8 +1220,8 @@ struct Context
 * Pre-allocate a pool
 * Roll your own free-list, bitmapped block, GC...
 
-<!--_footer: https://bitbashing.io/gc-for-systems-programmers.html-->
-<!--https://forum.dlang.org/post/tnajfjmvvyqardwhxegi@forum.dlang.org-->
+<!- -_footer: https://bitbashing.io/gc-for-systems-programmers.html- ->
+<!- -https://forum.dlang.org/post/tnajfjmvvyqardwhxegi@forum.dlang.org- ->
 
 -----------------------------------------------------------
 ## Concatenation
@@ -1279,4 +1259,38 @@ string environmentGet(string key, return scope Allocator alloc = gc)
 
 ![Image height:480](img/gc-connections.png)
 
-<!--_footer: https://github.com/dlang/dmd/tree/master/druntime/src/core/internal/gc-->
+<!- -_footer: https://github.com/dlang/dmd/tree/master/druntime/src/core/internal/gc- ->
+
+-----------------------------------------------------------
+
+# GC Phobia
+
+![Image height:250](img/newsgroup-gc-phobia.png)
+<!- -_footer: https://forum.dlang.org/post/mailman.147.1702920162.3719.digitalmars-d-learn@puremagic.com- ->
+
+-----------------------------------------------------------
+###
+
+| Do 😎                    | Don't ☹️                     |
+|--------------------------|------------------------------|
+| Free big chunks          | Pair each malloc ⟺ free     |
+| Free at end of scope     | Manually call free           |
+| Return simple values     | Be annoying on the call site |
+
+-----------------------------------------------------------
+## Context struct could help
+
+![Image height:500](img/jblow-context.png)
+
+<!--_footer: https://youtu.be/uZgbKrDEzAs?si=clQT4OAd4j66KJ8i&t=2303- ->
+
+-----------------------------------------------------------
+### std.experimental.allocator is BIG
+
+* Interface + composable building blocks
+* 20 000 lines of code 😲
+* Overkill for my purposes
+
+<!- -_footer: https://dlang.org/phobos/std_experimental_allocator.html- ->
+
+-->
