@@ -323,13 +323,9 @@ uint randomPcg32(ref ulong seed)
 
 * Simple to use
 * Complex to implement *in systems language*
-  * Type info / pointer bitmaps
-  * Druntime dependency
-  * Non-portable
-* Issues can arise with:
   * False pointers
-  * Foreign languages
-  * WebAssembly (No implementation yet)
+  * Druntime dependency (Can be inconvenient)
+  * Non-portable (No WebAssembly implementation yet)
 
 -----------------------------------------------------------
 ![bg sepia](img/bg.png)
@@ -379,6 +375,9 @@ void getString(IMoniker moniker, IBindCtx ctx)
     allocator.release();
 }
 ```
+
+<!-- _footer: https://learn.microsoft.com/en-us/windows/win32/api/objidl/nf-objidl-imoniker-getdisplayname -->
+
 -----------------------------------------------------------
 ### 0. Manually free
 
@@ -516,7 +515,11 @@ void main()
 -----------------------------------------------------------
 ### 4. Null garbage collection
 
+<span data-marpit-fragment="1">
+
 > ~~Memory is automatically managed by occasionally pausing all threads and scanning for memory still in use, and freeing the rest.~~
+
+</span>
 
 -----------------------------------------------------------
 ### 4. Null garbage collection
@@ -550,8 +553,6 @@ Amusing story from Kent Mitchell
 ### 5. Scope Array
 
 * Extension of stack memory
-* Struct containing a static array
-* For larger sizes, heap allocate
 * Examples:
   * `std.internal.string: tempCString`
   * `dmd.common.string: SmallBuffer`
@@ -804,7 +805,7 @@ void stack()
 
 -----------------------------------------------------------
 
-## Allocator interface is flexible
+## Allocator interface
 
 * Arena could be passed around by `ref` or pointer
 * But we want something easy and extensible
@@ -933,7 +934,18 @@ void main() @safe
 ```
 
 -----------------------------------------------------------
-# It can be stored
+# But what about `@nogc`
+
+* There's `return scope`, but no `@inout_nogc`
+* DIPs for callback attributes still pending
+* Cheat: pretend it is `@nogc`
+* Hot take: `@nogc` should not be part of function type
+* Linting tool instead
+
+<!-- _footer: https://github.com/dlang/DIPs/pull/198-->
+
+-----------------------------------------------------------
+# Allocator can be stored
 
 <!--_footer: See `dconf24/ex3_array.d`-->
 
@@ -994,33 +1006,12 @@ Just don't invalidate inside a block scope 🙈
   - [Arenas and the almighty concatenation operator](https://nullprogram.com/blog/2024/05/25/)
 
 -----------------------------------------------------------
-### Concatenation with arenas is efficient
-
-GC makes redundant allocations for text fragments
-```D
-import std.conv;
-
-string toString(float x, float y)
-{
-    return x.text ~ ", " ~ y.text;
-}
-```
-
-<!-- _footer: see ex5_appending.d-->
-
-<span data-marpit-fragment="1">
-
-Can be avoided with arenas!
-
-</span>
-
------------------------------------------------------------
 ## It cleaned up my code
 
 * Deleted tons of destructors and `free()` calls
 * Less `@trusted` annotations
-* Deleted `ScopeArray`, `Stack`, and `Appender`
-  * (just need `Array`)
+* Deleted `ScopeArray`, `Stack`, and `NogcAppender`
+  * `Array` is all you need 🥰
 * It only gets better
   * generalizes to other scenarios
 
@@ -1047,7 +1038,7 @@ void memoryMapping()
 
 -----------------------------------------------------------
 
-### map ⋍ alloc, unmap ⋍ free
+### Map ⋍ alloc, unmap ⋍ free
 
 ```D
 {
@@ -1061,18 +1052,6 @@ void memoryMapping()
     // mapper.~this() unmaps
 }
 ```
-
------------------------------------------------------------
-
-# But what about `@nogc`
-
-* There's `return scope`, but no `@inout_nogc`
-* DIPs for callback attributes still pending
-* Cheat: pretend it is `@nogc`
-* Hot take: `@nogc` should not be part of function type
-* Linting tool instead
-
-<!-- _footer: https://github.com/dlang/DIPs/pull/198-->
 
 -----------------------------------------------------------
 # Ugly signatures

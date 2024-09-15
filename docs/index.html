@@ -357,7 +357,7 @@
 <li data-marpit-fragment="6"><code>GetDisplayName</code> ⟺ <span data-marpit-fragment="7"><code>CoTaskMemFree</code></span></li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="35" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="35" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="35" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="https://learn.microsoft.com/en-us/windows/win32/api/objidl/nf-objidl-imoniker-getdisplayname" data-theme="uncover" lang="en-US" data-marpit-pagination="35" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:https://learn.microsoft.com/en-us/windows/win32/api/objidl/nf-objidl-imoniker-getdisplayname;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
 <h3 id="0-manually-free-2">0. Manually free</h3>
 <p>Documentation suggests <code>IMalloc::Free</code></p>
@@ -374,6 +374,7 @@
     allocator.release();
 }
 </code></pre>
+<footer><a href="https://learn.microsoft.com/en-us/windows/win32/api/objidl/nf-objidl-imoniker-getdisplayname">https://learn.microsoft.com/en-us/windows/win32/api/objidl/nf-objidl-imoniker-getdisplayname</a></footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="36" data-marpit-fragments="4" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="https://dlang.org/blog/2019/07/15/ownership-and-borrowing-in-d/" data-theme="uncover" lang="en-US" data-marpit-pagination="36" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:https://dlang.org/blog/2019/07/15/ownership-and-borrowing-in-d/;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
@@ -516,9 +517,11 @@
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="46" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="46" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
 <h3 id="4-null-garbage-collection">4. Null garbage collection</h3>
+<span data-marpit-fragment="1">
 <blockquote>
 <p><s>Memory is automatically managed by occasionally pausing all threads and scanning for memory still in use, and freeing the rest.</s></p>
 </blockquote>
+</span>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="47" data-marpit-fragments="4" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="https://devblogs.microsoft.com/oldnewthing/20100809-00/?p=13203" data-theme="uncover" lang="en-US" data-marpit-pagination="47" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:https://devblogs.microsoft.com/oldnewthing/20100809-00/?p=13203;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
@@ -744,7 +747,7 @@
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="58" data-marpit-fragments="2" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="58" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
-<h2 id="allocator-interface-is-flexible">Allocator interface is flexible</h2>
+<h2 id="allocator-interface">Allocator interface</h2>
 <ul>
 <li data-marpit-fragment="1">Arena could be passed around by <code>ref</code> or pointer</li>
 <li data-marpit-fragment="2">But we want something easy and extensible</li>
@@ -859,9 +862,21 @@
 }
 </code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="65" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="See `dconf24/ex3_array.d`" data-theme="uncover" lang="en-US" data-marpit-pagination="65" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:See `dconf24/ex3_array.d`;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="65" data-marpit-fragments="5" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="https://github.com/dlang/DIPs/pull/198" data-theme="uncover" lang="en-US" data-marpit-pagination="65" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:https://github.com/dlang/DIPs/pull/198;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
-<h1 id="it-can-be-stored">It can be stored</h1>
+<h1 id="but-what-about-nogc">But what about <code>@nogc</code></h1>
+<ul>
+<li data-marpit-fragment="1">There's <code>return scope</code>, but no <code>@inout_nogc</code></li>
+<li data-marpit-fragment="2">DIPs for callback attributes still pending</li>
+<li data-marpit-fragment="3">Cheat: pretend it is <code>@nogc</code></li>
+<li data-marpit-fragment="4">Hot take: <code>@nogc</code> should not be part of function type</li>
+<li data-marpit-fragment="5">Linting tool instead</li>
+</ul>
+<footer><a href="https://github.com/dlang/DIPs/pull/198">https://github.com/dlang/DIPs/pull/198</a></footer>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="66" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="See `dconf24/ex3_array.d`" data-theme="uncover" lang="en-US" data-marpit-pagination="66" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:See `dconf24/ex3_array.d`;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
+<header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
+<h1 id="allocator-can-be-stored">Allocator can be stored</h1>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-D"><span class="hljs-keyword">struct</span> Array(T)
 {
     T[] slice;
@@ -878,7 +893,7 @@
 </code></pre>
 <footer>See <code>dconf24/ex3_array.d</code></footer>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="66" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="https://github.com/atilaneves/automem/issues/25" data-theme="uncover" lang="en-US" data-marpit-pagination="66" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:https://github.com/atilaneves/automem/issues/25;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="67" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="https://github.com/atilaneves/automem/issues/25" data-theme="uncover" lang="en-US" data-marpit-pagination="67" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:https://github.com/atilaneves/automem/issues/25;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
 <h2 id="no-more-invalidation-problem">No more invalidation problem</h2>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-D"><span class="hljs-keyword">void</span> main() <span class="hljs-keyword">@safe</span>
@@ -895,7 +910,7 @@
 </span>
 <footer><a href="https://github.com/atilaneves/automem/issues/25">https://github.com/atilaneves/automem/issues/25</a></footer>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-marpit-fragments="4" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="67" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="81" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;img/memory-mapping.png&quot;);background-size:auto 500px;"></figure></div></section></foreignObject><foreignObject width="65%" height="720"><section id="67" data-marpit-fragments="4" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="67" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="81" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section data-marpit-fragments="4" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="68" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="81" data-marpit-advanced-background="background" data-marpit-advanced-background-split="right"><div data-marpit-advanced-background-container="true" data-marpit-advanced-background-direction="horizontal"><figure style="background-image:url(&quot;img/memory-mapping.png&quot;);background-size:auto 500px;"></figure></div></section></foreignObject><foreignObject width="65%" height="720"><section id="68" data-marpit-fragments="4" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="68" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;--marpit-advanced-background-split:35%;" data-marpit-pagination-total="81" data-marpit-advanced-background="content" data-marpit-advanced-background-split="right">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
 <h3 id="overhead-can-be-reduced">Overhead can be reduced</h3>
 <ul>
@@ -905,7 +920,7 @@
 <li data-marpit-fragment="4">But: non-portable</li>
 </ul>
 </section>
-</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-marpit-fragments="4" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="67" style="" data-marpit-pagination-total="81" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="68" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="68" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
+</foreignObject><foreignObject width="1280" height="720" data-marpit-advanced-background="pseudo"><section data-marpit-fragments="4" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="68" style="" data-marpit-pagination-total="81" data-marpit-advanced-background="pseudo" data-marpit-advanced-background-split="right"></section></foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="69" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="69" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
 <h1 id="resources">Resources</h1>
 <ul>
@@ -923,7 +938,7 @@
 </li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="69" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="see ex5_appending.d" data-theme="uncover" lang="en-US" data-marpit-pagination="69" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:see ex5_appending.d;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="70" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="see ex5_appending.d" data-theme="uncover" lang="en-US" data-marpit-pagination="70" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:see ex5_appending.d;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
 <h3 id="concatenation-with-arenas-is-efficient">Concatenation with arenas is efficient</h3>
 <p>GC makes redundant allocations for text fragments</p>
@@ -939,15 +954,15 @@
 </span>
 <footer>see ex5_appending.d</footer>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="70" data-marpit-fragments="6" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="70" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="71" data-marpit-fragments="6" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="71" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
 <h2 id="it-cleaned-up-my-code">It cleaned up my code</h2>
 <ul>
 <li data-marpit-fragment="1">Deleted tons of destructors and <code>free()</code> calls</li>
 <li data-marpit-fragment="2">Less <code>@trusted</code> annotations</li>
-<li data-marpit-fragment="3">Deleted <code>ScopeArray</code>, <code>Stack</code>, and <code>Appender</code>
+<li data-marpit-fragment="3">Deleted <code>ScopeArray</code>, <code>Stack</code>, and <code>NogcAppender</code>
 <ul>
-<li data-marpit-fragment="4">(just need <code>Array</code>)</li>
+<li data-marpit-fragment="4"><code>Array</code> is all you need <img class="emoji" draggable="false" alt="🥰" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@14.1.2/assets/svg/1f970.svg" data-marp-twemoji=""/></li>
 </ul>
 </li>
 <li data-marpit-fragment="5">It only gets better
@@ -957,7 +972,7 @@
 </li>
 </ul>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="71" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="71" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="72" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="72" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
 <h3 id="gpu-memory-mapping">GPU Memory mapping</h3>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-D"><span class="hljs-keyword">void</span> copying()
@@ -977,9 +992,9 @@
 }
 </code></pre>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="72" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="72" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="73" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="73" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
-<h3 id="map-%E2%8B%8D-alloc-unmap-%E2%8B%8D-free">map ⋍ alloc, unmap ⋍ free</h3>
+<h3 id="map-%E2%8B%8D-alloc-unmap-%E2%8B%8D-free">Map ⋍ alloc, unmap ⋍ free</h3>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-D">{
     <span class="hljs-keyword">auto</span> mapper = Mapper(buffer, <span class="hljs-number">2</span>); <span class="hljs-comment">// Arena</span>
     <span class="hljs-built_in">float</span>[] mappedBuffer = mapper[];
@@ -991,18 +1006,6 @@
     <span class="hljs-comment">// mapper.~this() unmaps</span>
 }
 </code></pre>
-</section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="73" data-marpit-fragments="5" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-footer="https://github.com/dlang/DIPs/pull/198" data-theme="uncover" lang="en-US" data-marpit-pagination="73" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--footer:https://github.com/dlang/DIPs/pull/198;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
-<header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
-<h1 id="but-what-about-nogc">But what about <code>@nogc</code></h1>
-<ul>
-<li data-marpit-fragment="1">There's <code>return scope</code>, but no <code>@inout_nogc</code></li>
-<li data-marpit-fragment="2">DIPs for callback attributes still pending</li>
-<li data-marpit-fragment="3">Cheat: pretend it is <code>@nogc</code></li>
-<li data-marpit-fragment="4">Hot take: <code>@nogc</code> should not be part of function type</li>
-<li data-marpit-fragment="5">Linting tool instead</li>
-</ul>
-<footer><a href="https://github.com/dlang/DIPs/pull/198">https://github.com/dlang/DIPs/pull/198</a></footer>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="74" data-paginate="true" data-background-color="#f8fff4" data-header="https://github.com/dkorpel/dconf" data-theme="uncover" lang="en-US" data-marpit-pagination="74" style="--paginate:true;--background-color:#f8fff4;--header:https://github.com/dkorpel/dconf;--theme:uncover;background-color:#f8fff4;background-image:none;" data-marpit-pagination-total="81">
 <header><a href="https://github.com/dkorpel/dconf">https://github.com/dkorpel/dconf</a></header>
