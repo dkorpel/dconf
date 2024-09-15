@@ -98,7 +98,6 @@ void main()
 * Msc. Computer Science from TU Delft
 * Part time Issue Manager for D Language Foundation
 * Part time D programmer at SARC
-* DConf'23 talk about safe stack memory
 
 -----------------------------------------------------------
 # Coming up
@@ -177,8 +176,7 @@ void audioCallback(float[] buffer)
 
 -----------------------------------------------------------
 # Deadline missed?
-* No, GC only pauses threads it knows
-* Audio thread is already detached
+* No, audio thread is 'detached' from GC
 * What if we want to load a sample in audioCallback?
 * `std.stdio` uses GC 😲
 * But Reference Counting wouldn't have helped
@@ -212,7 +210,7 @@ void audioCallback(float[] buffer)
 <!--_paginate: hide-->
 
 -----------------------------------------------------------
-### 1960s: Linear Congruential Random
+### 1960s: Linear Congruential Generator
 
 ![bg](img/random-noise.png)
 
@@ -256,7 +254,7 @@ int RANDU()
 <!--_footer: Visualization by Cmglee, CC-BY-SA-3.0: https://commons.wikimedia.org/wiki/File:Mersenne_Twister_visualisation.svg-->
 -----------------------------------------------------------
 ### 1997: MERSENNE TWISTER
-* Solved problems of earlier PRNGs
+* Statistically good random
 * Default PRNG Excel, Matlab, GNU octave
 * And Phobos (`MersenneTwisterEngine` in `std.random`)
 * Fails TestU01 statistical tests (2007)
@@ -264,7 +262,7 @@ int RANDU()
 <!--_footer: https://en.wikipedia.org/wiki/Mersenne_Twister-->
 -----------------------------------------------------------
 ### 2014: PCG Random
-* Passes TestU01 suite
+* Passes TestU01 suiter
 * More complex than the twister?
 * Nope, just LCG with good constants and a tweak
 
@@ -324,7 +322,6 @@ uint randomPcg32(ref ulong seed)
 * Simple to use
 * Complex to implement *in systems language*
   * False pointers
-  * Druntime dependency (Can be inconvenient)
   * Non-portable (No WebAssembly implementation yet)
 
 -----------------------------------------------------------
@@ -1117,9 +1114,8 @@ struct Context
 
 * Refactored `dmd/escape.d` this year
 * Number of `if` statements 310 ⇒ 240
-* Nested functions + `scope` still broken
-* Confusing `return scope` syntax still here
 * `scope` inference still needs work
+* Nested functions + `scope` still broken
 * Want partial / transitive scope for structs
 
 -----------------------------------------------------------
@@ -1138,7 +1134,7 @@ struct Context
 * Look for simple solutions
 * Calling `free()` is not `@safe`
 * End-of-scope cleanup is `@safe` with `scope`
-* (IMO) `@nogc` should not be part of function type
+* Free big chunks at once with arenas
 
 -----------------------------------------------------------
 ![bg](img/title.jpg)
