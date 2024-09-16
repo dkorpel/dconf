@@ -232,6 +232,12 @@ int RANDU()
 
 </span>
 
+<span data-marpit-fragment="3">
+
+"Truly horrible" - Donald Knuth
+
+</span>
+
 <!--_footer: https://en.wikipedia.org/wiki/RANDU-->
 
 -----------------------------------------------------------
@@ -253,15 +259,15 @@ int RANDU()
 <!--_footer: Visualization by Cmglee, CC-BY-SA-3.0: https://commons.wikimedia.org/wiki/File:Mersenne_Twister_visualisation.svg-->
 -----------------------------------------------------------
 ### 1997: MERSENNE TWISTER
-* Statistically good random
-* Default PRNG Excel, Matlab, GNU octave
-* And Phobos (`MersenneTwisterEngine` in `std.random`)
-* Fails TestU01 statistical tests (2007)
+* Rectifies flaws of older PRNGs
+* Used by Excel, Matlab, GNU octave
+* And Phobos (`std.random: MersenneTwisterEngine`)
+* Fails TestU01 Big Crush test (2007)
 
 <!--_footer: https://en.wikipedia.org/wiki/Mersenne_Twister-->
 -----------------------------------------------------------
 ### 2014: PCG Random
-* Passes TestU01 suiter
+* Passes TestU01 suite
 * More complex than the twister?
 * Nope, just LCG with good constants and a tweak
 
@@ -281,7 +287,7 @@ int RANDU()
 ```
 -----------------------------------------------------------
 
-### Easy to implement
+### Full implementation:
 
 ```D
 uint randomPcg32(ref ulong seed)
@@ -305,7 +311,7 @@ uint randomPcg32(ref ulong seed)
 -----------------------------------------------------------
 ### Reference Counting is complex
 
-
+* Truly horrible - ~~Donald Knuth~~
 * Spawns lots of language features
   * `__mutable` / `__metadata` storage class ([DIP1xxx](https://github.com/RazvanN7/DIPs/blob/Mutable_Dip/DIPs/DIP1xxx-rn.md))
   * Argument Ownership and Function Calls ([DIP1021](https://dlang.org/dips/1021))
@@ -316,19 +322,31 @@ uint randomPcg32(ref ulong seed)
 <!--_footer: <audio src="img/RC.mp3" controls loop> -->
 
 -----------------------------------------------------------
-### GC is complex to implement
+### GC is... difficult
 
-* Simple to use
+* Simple for user
 * Complex to implement *in systems language*
+  * Requires program-wide knowledge
   * False pointers
-  * Non-portable (No WebAssembly implementation yet)
+  * Non-portable (No WASM implementation yet)
 
 -----------------------------------------------------------
 ![bg sepia](img/bg.png)
 <!--_header: ''-->
-## ⚠️ 6 suboptimal @nogc solutions
+### 6 suboptimal @nogc solutions
 <!--_paginate: hide-->
 
+-----------------------------------------------------------
+### 0. Manually free
+
+```D
+void main()
+{
+    string s = environmentGet("PATH");
+    writeln(s);
+    free(s.ptr);
+}
+```
 -----------------------------------------------------------
 ### 0. Manually free
 
@@ -341,8 +359,6 @@ void main()
     writeln(s);
 }
 ```
-
-Clutters code
 
 -----------------------------------------------------------
 ### 0. Manually free
@@ -446,6 +462,8 @@ void main()
 }
 ```
 
+<!--_footer: https://wiki.dlang.org/Voldemort_types-->
+
 -----------------------------------------------------------
 ### 2. Stack memory
 
@@ -506,7 +524,7 @@ void main()
 * Annoying to call (doesn't compose)
   * Can't do `environmentGet("PATH").splitter(';')`
 * Still need a `@nogc` Appender
-* Hard to make `@safe`
+  * Hard to make `@safe`
 
 -----------------------------------------------------------
 ### 4. Null garbage collection
@@ -521,7 +539,7 @@ void main()
 ### 4. Null garbage collection
 
 * "Everybody thinks about garbage collection the wrong way" - Raymond Chen
-* Garbage collection is simulating a computer with an infinite amount of memory
+* Simulating a computer with infinite memory
 * Null garbage collector: never deallocate
 * Works if enough RAM
 
@@ -552,6 +570,8 @@ Amusing story from Kent Mitchell
 * Examples:
   * `std.internal.string: tempCString`
   * `dmd.common.string: SmallBuffer`
+
+<!--_footer: https://github.com/dlang/phobos/blob/master/std/internal/cstring.d-->
 
 -----------------------------------------------------------
 ### 5. Scope Array
@@ -797,14 +817,12 @@ void stack()
 }
 ```
 
-<!--_footer: See example ex3_stringz.d-->
-
 -----------------------------------------------------------
 
 ## Allocator interface
 
 * Arena could be passed around by `ref` or pointer
-* But we want something easy and extensible
+* But we want something extensible
 
 <span data-marpit-fragment="2">
 
@@ -877,13 +895,7 @@ void main()
 ```
 
 -----------------------------------------------------------
-## Allocator should have GC default
-
-<span data-marpit-fragment="1">
-
-Notice the default argument ⬇️
-
-</span>
+### Allocator should have GC default
 
 ```D
 string environmentGet(string name, Allocator alloc = gc)
@@ -943,21 +955,12 @@ void main() @safe
 -----------------------------------------------------------
 # Allocator can be stored
 
-<!--_footer: See `dconf24/ex3_array.d`-->
-
 ```D
 struct Array(T)
 {
     T[] slice;
     size_t capacity;
     Allocator alloc;
-
-    void opOpAssign(string op : "~")(T[] rhs)
-    {
-        auto newSlice = alloc.array!T(length + rhs.length);
-        copy(chain(this.slice, rhs), newSlice);
-        this.slice = newSlice;
-    }
 }
 ```
 -----------------------------------------------------------
@@ -977,14 +980,14 @@ void main() @safe
 
 <span data-marpit-fragment="1">
 
-Just don't invalidate inside a block scope 🙈
+Just don't free when growing the array 🙈
 
 </span>
 
 -----------------------------------------------------------
 ### Overhead can be reduced
 
-* Can use memory mapping instead of linked list
+* Memory mapping instead of linked list
 * Non-portable
 
 ![bg right:33% height:500](img/memory-mapping.png)
@@ -1006,8 +1009,7 @@ Just don't invalidate inside a block scope 🙈
 * Less `@trusted` annotations
 * Deleted `ScopeArray`, `Stack`, and `NogcAppender`
   * `Array` is all you need 🥰
-* It only gets better
-  * generalizes to other scenarios
+* Found more uses for the pattern
 
 -----------------------------------------------------------
 ### GPU Memory mapping
@@ -1024,8 +1026,9 @@ void copying()
 void memoryMapping()
 {
     float[] data = glMapBufferRange(buffer, 2 * float.sizeof);
-    data[0] = 3.0;
-    data[1] = 4.0;
+    size_t i = 0;
+    data[i++] = 3.0;
+    data[i++] = 4.0;
     glUnmapBuffer(buffer);
 }
 ```
@@ -1037,9 +1040,9 @@ void memoryMapping()
 ```D
 {
     auto mapper = Mapper(buffer, 2); // Arena
-    float[] mappedBuffer = mapper[];
+    scope float[] mappedBuffer = mapper[];
 
-    auto data = Array!float(mappedBuffer, failAllocator);
+    auto data = Array!float(storage: mappedBuffer, failAllocator);
     data ~= 3.0;
     data ~= 4.0;
 
@@ -1097,7 +1100,7 @@ struct Context
     void* _internal;
 }
 ```
-<!--_footer: https://github.com/odin-lang/Odin/blob/a25a9e6ebe58510cfac20e1187f41a01ec3ec2b2/base/runtime/core.odin#L434-L446-->
+<!--_footer: https://github.com/odin-lang/Odin/blob/a25a9e6ebe58510cfac20e1187f41a01ec3ec2b2/base/runtime/core.odin#L434-L446 -->
 
 -----------------------------------------------------------
 
@@ -1121,8 +1124,8 @@ struct Context
 ### Takeaways
 * Look for simple solutions
 * Calling `free()` is not `@safe`
-* End-of-scope cleanup is `@safe` with `scope`
-* Free big chunks at once with arenas
+* End-of-scope cleanup can be `@safe` with `scope`
+* [Give it a try!](https://github.com/dkorpel/dconf)
 
 -----------------------------------------------------------
 ![bg](img/title.jpg)

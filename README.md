@@ -3,8 +3,8 @@
 
 ### Avoid the Garbage Collector in 80 Lines
 
-- Slides (html): [dkorpel.github.io/dconf](https://dkorpel.github.io/dconf)
-- Slides (pdf): [TODO]()
+- [Slides (html)](https://dkorpel.github.io/dconf)
+- [Slides (pdf)](https://github.com/dkorpel/dconf/blob/master/dconf24/slides.pdf)
 - [Code examples](https://github.com/dkorpel/dconf/tree/master/dconf24)
 
 ---

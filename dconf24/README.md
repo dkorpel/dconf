@@ -1,11 +1,12 @@
 ## Code examples
 
-These are code examples accompanying the presentation.
+Since the code examples in the presentation are minimized to fit on a slide, here are complete runnable code examples showing off `Allocator` and `Arena`.
 
 ### [allocator.d](https://github.com/dkorpel/dconf/blob/master/dconf24/allocator.d)
 
 This is the file that you need to import to start using the `Arena` allocator and the `Allocator` interface.
-This implementation is meant as a simple, portable base, but some features you might want to add are:
+This implementation is meant as a simple, portable base. 
+Some features you might want to add are:
 
 - A fine-tuned groing strategy for allocating new pages in the arena, or:
 - Expanding Arena's with memory mapping (OS-specific) instead of keeping a linked list
@@ -25,7 +26,7 @@ Allocator a = a.alloc;
 
 ### [Example 1: Returning stack memory](https://github.com/dkorpel/dconf/blob/master/dconf24/ex1_return.d)
 
-This example shows how allocated memory can be returned by passing the allocator as a parameter.
+Allocated memory can be returned by passing the allocator as a parameter.
 
 ```D
 char[] concat(scope char[] l, scope char[] r, return scope Allocator alloc = gc)
@@ -33,7 +34,7 @@ char[] concat(scope char[] l, scope char[] r, return scope Allocator alloc = gc)
 
 ### [Example 2: Storing an allocator in a range](https://github.com/dkorpel/dconf/blob/master/dconf24/ex2_range.d)
 
-This example shows how an allocator can be stored as a struct field, allowing an `InputRange.front()` to return allocated memory.
+An allocator can be stored as a struct field, allowing an `InputRange.front()` to return allocated memory.
 
 ```D
 struct Range

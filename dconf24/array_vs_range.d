@@ -1,3 +1,7 @@
+/*
+Example of the same function implemented with array allocation, and as a range
+*/
+
 ulong[] factorsOfArray(ulong x)
 {
 	ulong[] result;
