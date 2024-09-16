@@ -5,6 +5,7 @@
 
 - Slides (html): [dkorpel.github.io/dconf](https://dkorpel.github.io/dconf)
 - Slides (pdf): [TODO]()
+- [Code examples](https://github.com/dkorpel/dconf/tree/master/dconf24)
 
 ---
 

@@ -1,4 +1,4 @@
-module dconf24.ex5_appending;
+module dconf24.ex4_appending;
 
 import dconf24.allocator;
 import std.stdio;

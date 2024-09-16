@@ -3,7 +3,7 @@ set -e
 echo "Running example 0"
 dmd -i -g -preview=dip1000 -run dconf24/ex0_tempbuf.d
 
-echo "Running example 0"
+echo "Running example 1"
 dmd -i -g -preview=dip1000 -run dconf24/ex1_return.d
 
 echo "Running example 2"
@@ -13,7 +13,4 @@ echo "Running example 3"
 dmd -i -g -preview=dip1000 -run dconf24/ex3_stringz.d
 
 echo "Running example 4"
-dmd -i -g -preview=dip1000 -run dconf24/ex4_array.d
-
-echo "Running example 5"
-dmd -i -g -preview=dip1000 -run dconf24/ex5_appending.d
+dmd -i -g -preview=dip1000 -run dconf24/ex4_appending.d

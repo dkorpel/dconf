@@ -95,7 +95,7 @@ void main()
 -----------------------------------------------------------
 
 # Whoami
-* Msc. Computer Science from TU Delft
+* Msc. Computer Science TU Delft
 * Part time Issue Manager for D Language Foundation
 * Part time D programmer at SARC
 
@@ -105,7 +105,6 @@ void main()
 * On simplicity
 * 6 suboptimal `@nogc` approaches
 * The 80 line solution
-* Bonus: ~~DIP1000~~ scoped pointers status update
 
 -----------------------------------------------------------
 ![bg sepia](img/bg.png)
@@ -985,12 +984,10 @@ Just don't invalidate inside a block scope 🙈
 -----------------------------------------------------------
 ### Overhead can be reduced
 
-* Use memory mapping instead of linked list
-* Reserve gigabyte for Arena
-* Lazily commit pages
-* But: non-portable
+* Can use memory mapping instead of linked list
+* Non-portable
 
-![bg right:35% height:500](img/memory-mapping.png)
+![bg right:33% height:500](img/memory-mapping.png)
 
 -----------------------------------------------------------
 # Resources
@@ -1110,15 +1107,6 @@ struct Context
 <!--_paginate: hide-->
 
 -----------------------------------------------------------
-### Scoped pointers status update
-
-* Refactored `dmd/escape.d` this year
-* Number of `if` statements 310 ⇒ 240
-* `scope` inference still needs work
-* Nested functions + `scope` still broken
-* Want partial / transitive scope for structs
-
------------------------------------------------------------
 ### Suggested GC strategy
 * Write code as if you have infinite memory
   * (Optimization for a known future is okay)
@@ -1180,6 +1168,15 @@ struct Context
 * `return scope` vs. `scope return` still here
 * Inference by default would help
 * `ret&` and `retscope`?
+
+-----------------------------------------------------------
+### Scoped pointers status update
+
+* Refactored `dmd/escape.d` this year
+* Number of `if` statements 310 ⇒ 240
+* `scope` inference still needs work
+* Nested functions + `scope` still broken
+* Want partial / transitive scope for structs
 
 -----------------------------------------------------------
 
