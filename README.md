@@ -5,7 +5,14 @@
 
 - [Slides (html)](https://dkorpel.github.io/dconf)
 - [Slides (pdf)](https://github.com/dkorpel/dconf/blob/master/dconf24/slides.pdf)
-- [Code examples](https://github.com/dkorpel/dconf/tree/master/dconf24)
+- [The 80 lines](https://github.com/dkorpel/dconf/blob/master/dconf24/allocator.d)
+- [Code examples using it](https://github.com/dkorpel/dconf/tree/master/dconf24)
+
+### Lightning talk
+
+- [Slides (html)](https://dkorpel.github.io/dconf/slides-lightning.html)
+- [Tell us your DIP1000 woes](https://forum.dlang.org/thread/xvzzmgwibbjhuvmnhrgi@forum.dlang.org)
+- [Survey: Memory safety in D, what is your view?](https://forum.dlang.org/thread/lunzanrfkklespwttyuy@forum.dlang.org)
 
 ---
 
