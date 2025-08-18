@@ -291,7 +291,7 @@ Hyrum’s Law:
 
 > Then treat warnings as errors in 'production builds'
 
-* Has its own problems with false positives, updates, etc.
+- Has its own problems with false positives, updates, etc.
 
 ```D
 switch (x)
@@ -348,10 +348,21 @@ google-translate
 
 - Often library solutions exist
 * Disliked because:
-  * Requires imports <span data-marpit-fragment="5">(prelude modules?)</span>
-  * Worse performance <span data-marpit-fragment="5">(optimized debug builds?)</span>
-  * Bad errors messages <span data-marpit-fragment="5">(diagnostic message attributes?)</span>
-  * Ugly syntax <span data-marpit-fragment="5">(new operator overloading?)</span>
+  * Requires imports
+  * Worse performance
+  * Bad errors messages
+  * Ugly syntax
+
+---
+
+# #5 - Look for the root problem
+
+- Often library solutions exist
+* Disliked because:
+  * Requires imports (prelude modules?)
+  * Worse performance (optimized debug builds?)
+  * Bad errors messages (diagnostic message attributes?)
+  * Ugly syntax (new operator overloading?)
 
 ---
 # #5 - Look for the root problem
