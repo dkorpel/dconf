@@ -1,0 +1,5 @@
+{
+    "markdown.marp.themes": [
+		"dconf25/dracula.css"
+	]
+}
