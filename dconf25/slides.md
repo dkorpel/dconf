@@ -29,7 +29,7 @@ Why adding features to the compiler is so hard
 Dennis Korpel
 
 <!--_header: -->
-<!--_footer: DConf'25 London - August 20 2024 · Slides: https://github.com/dkorpel/dconf -->
+<!--_footer: DConf'25 London - August 19 2024 · Slides: https://github.com/dkorpel/dconf -->
 <!--_paginate: hide-->
 
 ---
