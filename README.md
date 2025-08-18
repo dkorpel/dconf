@@ -2,7 +2,7 @@
 
 ### Saying NO to save a language
 
-- [Slides (html)](https://dkorpel.github.io/dconf/dconf24)
+- [Slides (html)](https://dkorpel.github.io/dconf)
 - [Slides (pdf)](https://github.com/dkorpel/dconf/blob/master/dconf25/slides.pdf)
 
 # [DConf 2024](https://dconf.org/2024/#dennisk)
