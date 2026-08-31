@@ -1,3 +1,16 @@
+All slides that run in a browser are hosted at [dkorpel.github.io/dconf](https://dkorpel.github.io/dconf).
+
+# DConf 2026
+
+### D-livering bloat-free game jam entries
+
+- [Slides (live in the browser)](https://dkorpel.github.io/dconf/dconf26/)
+
+The talk is itself a D program compiled to WebAssembly: the demos, the code examples and the
+games it is about all run inside the slides.
+
+---
+
 # [DConf 2025](https://dconf.org/2025/#dennisk)
 
 ### Saying NO to save a language
