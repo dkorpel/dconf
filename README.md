@@ -1,6 +1,6 @@
-All slides that run in a browser are hosted at [dkorpel.github.io/dconf](https://dkorpel.github.io/dconf).
+All slides that run in a browser are hosted at [dkorpel.github.io/dconf](https://dkorpel.github.io/dconf), which has an index of all talks.
 
-# DConf 2026
+# [DConf 2026](https://dconf.org/2026/#dennisk)
 
 ### D-livering bloat-free game jam entries
 
@@ -15,7 +15,8 @@ games it is about all run inside the slides.
 
 ### Saying NO to save a language
 
-- [Slides (html)](https://dkorpel.github.io/dconf)
+- [Video (YouTube)](https://youtu.be/cpP0RxgDR0U)
+- [Slides (html)](https://dkorpel.github.io/dconf/dconf25/)
 - [Slides (pdf)](https://github.com/dkorpel/dconf/blob/master/dconf25/slides.pdf)
 
 # [DConf 2024](https://dconf.org/2024/#dennisk)
@@ -23,6 +24,7 @@ games it is about all run inside the slides.
 
 ### Avoid the Garbage Collector in 80 Lines
 
+- [Video (YouTube)](https://youtu.be/1EW7F9px4dA)
 - [Slides (html)](https://dkorpel.github.io/dconf/dconf24)
 - [Slides (pdf)](https://github.com/dkorpel/dconf/blob/master/dconf24/slides.pdf)
 - [The 80 lines](https://github.com/dkorpel/dconf/blob/master/dconf24/allocator.d)
@@ -30,6 +32,7 @@ games it is about all run inside the slides.
 
 ### Lightning talk
 
+- [Video (YouTube, lightning talk session)](https://youtu.be/sWxHJ5vWMEE)
 - [Slides (html)](https://dkorpel.github.io/dconf/dconf24-lightning)
 - [Tell us your DIP1000 woes](https://forum.dlang.org/thread/xvzzmgwibbjhuvmnhrgi@forum.dlang.org)
 - [Survey: Memory safety in D, what is your view?](https://forum.dlang.org/thread/lunzanrfkklespwttyuy@forum.dlang.org)
@@ -56,6 +59,8 @@ games it is about all run inside the slides.
 
 ### Translating C to D
 
+- [Video (YouTube)](https://youtu.be/654rSPaIA0o)
+- [Q & A (YouTube)](https://youtu.be/ZANlWQLXYXU)
 - [Slides (PDF)](https://dconf.org/2022/online/slides/korpel.pdf)
 - [glfw-d](https://github.com/dkorpel/glfw-d)
 - [libsoundio-d](https://github.com/dkorpel/libsoundio-d)
