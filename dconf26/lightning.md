@@ -352,7 +352,7 @@ type_t[] allImplicitConversionTargets(type_t T)
 
 # What doesn't (always) work
 
-- variable's value vs type conflation
+- Variable's value vs type conflation
 
 ```D
 static assert(3.sizeof == int.sizeof);
