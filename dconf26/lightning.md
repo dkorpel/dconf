@@ -99,8 +99,6 @@ Source: https://forum.dlang.org/thread/yyjjebcbkmmtmvleywkr@forum.dlang.org
 > 2. Carry processing on these values with the usual algorithms
 > 3. If needed, dereify back the results into compile-time parameters
 
-Note: not talking about type manipulation.
-
 Source: https://forum.dlang.org/thread/rknpkj$d7f$1@digitalmars.com?page=1
 
 ---
