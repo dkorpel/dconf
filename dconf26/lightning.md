@@ -49,6 +49,10 @@ section.medium h1 {
 section.medium pre {
   margin: 0 auto;
 }
+section.snug pre code {
+  font-size: 16px;
+  line-height: 1.35;
+}
 section.medium pre code {
   font-size: 12.3px;
   line-height: 1.24;
@@ -163,7 +167,7 @@ auto foo(alias X, alias Y)()
 	return X[Y].init;
 }
 
-alias f0 = foo!(int, 3); // int[3].init = [0, 0, 0]
+int[3] f0 = foo!(int, 3); // int[3].init = [0, 0, 0]
 char f1 = foo!("abc", 3); // "abc"[3].init = char.init = 0xFF
 ```
 
@@ -172,14 +176,14 @@ char f1 = foo!("abc", 3); // "abc"[3].init = char.init = 0xFF
 # Requires parser change: Pointer syntax, type constructor
 
 ```D
-auto toPtr(type_t T)
+type_t toPtr(type_t t)
 {
-    return T*;
+    return t*;
 }
 
-type_t addConst(type_t t) 
-{ 
-    return const(t); 
+type_t addConst(type_t t)
+{
+    return const(t);
 }
 ```
 
@@ -349,8 +353,9 @@ type_t[] allImplicitConversionTargets(type_t T)
 ```
 
 ---
+<!-- _class: snug -->
 
-# What doesn't (always) work
+# What doesn't work: .init and .sizeof footgun
 
 - Variable's value vs type conflation
 
@@ -359,7 +364,12 @@ static assert(3.sizeof == int.sizeof);
 
 type_t largerType(type_t a, type_t b)
 {
-    return a.sizeof > b.sizeof;
+    return a.sizeof > b.sizeof ? a : b;
+}
+
+type_t elementType(type_t t)
+{
+    return typeof(t.init[0]);
 }
 
 enum staticArraySize(alias T, size_t length) = T.sizeof * length;
