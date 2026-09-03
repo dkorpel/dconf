@@ -39,6 +39,20 @@ section.dense pre code {
   font-size: 7.9px;
   line-height: 1.10;
 }
+section.medium {
+  padding: 22px 60px;
+}
+section.medium h1 {
+  font-size: 1.4rem;
+  margin: 0 0 8px 0;
+}
+section.medium pre {
+  margin: 0 auto;
+}
+section.medium pre code {
+  font-size: 11.4px;
+  line-height: 1.20;
+}
 </style>
 
 <br>
@@ -174,6 +188,24 @@ type_t addConst(type_t t) { return const(t); }
 
 ---
 
+# Works: optional is()
+
+```D
+// Current:
+static if (is(typeof(a)) == int)
+{
+
+}
+
+// Now also allowed:
+static if (typeof(a) == int)
+{
+
+}
+```
+
+---
+
 # Works: Switch
 
 ```D
@@ -274,62 +306,51 @@ template AllImplicitConversionTargets(T)
 ```
 
 ---
-<!-- _class: dense -->
+<!-- _class: medium -->
 
 # After:
 
 ```D
 type_t[] allImplicitConversionTargets(type_t T)
 {
-    if (is(T == bool))
-        return [byte] ~ allImplicitConversionTargets(byte);
-    else if (is(T == byte))
-        return [char, ubyte, short] ~ allImplicitConversionTargets(short);
-    else if (is(T == ubyte))
-        return [byte, char, short] ~ allImplicitConversionTargets(short);
-    else if (is(T == short))
-        return [ushort, wchar, int] ~ allImplicitConversionTargets(int);
-    else if (is(T == ushort))
-        return [short, wchar, dchar] ~ allImplicitConversionTargets(dchar);
-    else if (is(T == int))
-        return [dchar, uint, long] ~ allImplicitConversionTargets(long);
-    else if (is(T == uint))
-        return [dchar, int, long] ~ allImplicitConversionTargets(long);
-    else if (is(T == long))
-        return [ulong] ~ CentTypeList ~ [float, double, real];
-    else if (is(T == ulong))
-        return [long] ~ CentTypeList ~ [float, double, real];
-    else if (is(T == float))
-        return [double, real];
-    else if (is(T == double))
-        return [float, real];
-    else if (is(T == real))
-        return [float, double];
-    else if (is(T == char))
-        return [byte, ubyte, short] ~ allImplicitConversionTargets(short);
-    else if (is(T == wchar))
-        return [short, ushort, dchar] ~ allImplicitConversionTargets(dchar);
-    else if (is(T == dchar))
-        return [int, uint, long] ~ allImplicitConversionTargets(long);
-    else if (is(T == class))
-        return staticMap!(ApplyLeft!(CopyConstness, T), TransitiveBaseTypeTuple!T);
-    else if (is(T == interface))
-        return staticMap!(ApplyLeft!(CopyConstness, T), InterfacesTuple!T);
-    else if (isDynamicArray!T && !is(typeof(T.init[0]) == const))
+    switch (T)
     {
-       if (is(typeof(T.init[0]) == shared))
-           return [const(shared(Unqual!(typeof(T.init[0]))))[]];
-       else
-           return [const(Unqual!(typeof(T.init[0])))[]];
+    case bool:   return [byte] ~ allImplicitConversionTargets(byte);
+    case byte:   return [char, ubyte, short] ~ allImplicitConversionTargets(short);
+    case ubyte:  return [byte, char, short] ~ allImplicitConversionTargets(short);
+    case short:  return [ushort, wchar, int] ~ allImplicitConversionTargets(int);
+    case ushort: return [short, wchar, dchar] ~ allImplicitConversionTargets(dchar);
+    case int:    return [dchar, uint, long] ~ allImplicitConversionTargets(long);
+    case uint:   return [dchar, int, long] ~ allImplicitConversionTargets(long);
+    case long:   return [ulong] ~ CentTypeList ~ [float, double, real];
+    case ulong:  return [long] ~ CentTypeList ~ [float, double, real];
+    case float:  return [double, real];
+    case double: return [float, real];
+    case real:   return [float, double];
+    case char:   return [byte, ubyte, short] ~ allImplicitConversionTargets(short);
+    case wchar:  return [short, ushort, dchar] ~ allImplicitConversionTargets(dchar);
+    case dchar:  return [int, uint, long] ~ allImplicitConversionTargets(long);
+    default:
+        if (is(T == class))
+            return staticMap!(ApplyLeft!(CopyConstness, T), TransitiveBaseTypeTuple!T);
+        else if (is(T == interface))
+            return staticMap!(ApplyLeft!(CopyConstness, T), InterfacesTuple!T);
+        else if (isDynamicArray!T && !is(typeof(T.init[0]) == const))
+        {
+            if (is(typeof(T.init[0]) == shared))
+                return [const(shared(Unqual!(typeof(T.init[0]))))[]];
+            else
+                return [const(Unqual!(typeof(T.init[0])))[]];
+        }
+        else if (is(T : void*) && !is(T == void*))
+            return [void*];
+        else if (is(cent) && is(T == cent))
+            return UnsignedCentTypeList ~ [float, double, real];
+        else if (is(ucent) && is(T == ucent))
+            return SignedCentTypeList ~ [float, double, real];
+        else
+            return [];
     }
-    else if (is(T : void*) && !is(T == void*))
-        return [void*];
-    else if (is(cent) && is(T == cent))
-        return UnsignedCentTypeList ~ [float, double, real];
-    else if (is(ucent) && is(T == ucent))
-        return SignedCentTypeList ~ [float, double, real];
-    else
-        return [];
 }
 ```
 
