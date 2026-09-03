@@ -358,11 +358,11 @@ google-translate
 # #5 - Look for the root problem
 
 - Often library solutions exist
-* Disliked because:
-  * Requires imports (prelude modules?)
-  * Worse performance (optimized debug builds?)
-  * Bad errors messages (diagnostic message attributes?)
-  * Ugly syntax (new operator overloading?)
+- Disliked because:
+  - Requires imports (prelude modules?)
+  - Worse performance (optimized debug builds?)
+  - Bad errors messages (diagnostic message attributes?)
+  - Ugly syntax (new operator overloading?)
 
 ---
 # #5 - Look for the root problem
@@ -557,19 +557,6 @@ Expression overloadBinary(Expression e)
 
         result.addTemplateArgs([e.op]);
 
-    result.addArgs([e.lhs, e.rhs]);
-    return result;
-}
-```
-
----
-
-```D
-Expression overloadBinary(Expression e)
-{
-    string name = "opBinary";
-    auto result = new CallExpression(name);
-    result.addTemplateArgs([e.op]);
     result.addArgs([e.lhs, e.rhs]);
     return result;
 }
