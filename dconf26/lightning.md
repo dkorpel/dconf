@@ -36,8 +36,8 @@ section.dense pre {
   margin: 0 auto;
 }
 section.dense pre code {
-  font-size: 7.9px;
-  line-height: 1.10;
+  font-size: 8.4px;
+  line-height: 1.12;
 }
 section.medium {
   padding: 22px 60px;
@@ -50,8 +50,8 @@ section.medium pre {
   margin: 0 auto;
 }
 section.medium pre code {
-  font-size: 11.4px;
-  line-height: 1.20;
+  font-size: 12.3px;
+  line-height: 1.24;
 }
 </style>
 
@@ -112,7 +112,7 @@ Source: https://forum.dlang.org/thread/rknpkj$d7f$1@digitalmars.com?page=1
 # What you can do today:
 
 1. Convert type to `string` with .mangleof
-2. Pass strings variables around
+2. Pass string variables around
 3. Convert back with `__traits(toType, stringValue)`
 
 ---
@@ -155,7 +155,7 @@ type_t[3] floats = [float, double, real];
 
 ---
 
-# Works: Static array parrsing
+# Works: Static array parsing
 
 ```D
 auto foo(alias X, alias Y)()
@@ -169,21 +169,18 @@ char f1 = foo!("abc", 3); // "abc"[3].init = char.init = 0xFF
 
 ---
 
-# Requires parser change: Pointer syntax in expression
+# Requires parser change: Pointer syntax, type constructor
 
 ```D
 auto toPtr(type_t T)
 {
     return T*;
 }
-```
 
----
-
-# Requires parser change: type constructors
-
-```D
-type_t addConst(type_t t) { return const(t); }
+type_t addConst(type_t t) 
+{ 
+    return const(t); 
+}
 ```
 
 ---
@@ -192,7 +189,7 @@ type_t addConst(type_t t) { return const(t); }
 
 ```D
 // Current:
-static if (is(typeof(a)) == int)
+static if (is(typeof(a) == int))
 {
 
 }
@@ -214,6 +211,7 @@ type_t unsignedOf(type_t a)
     switch (a)
     {
     case int: return uint;
+    case short: return ushort;
     case long: return ulong;
     default:
         assert(0);
@@ -226,7 +224,11 @@ type_t unsignedOf(type_t a)
 # Works: Associtaitve Arrays
 
 ```D
-enum toUnsigned = [int: uint, short: ushort, byte: ubyte, long: ulong];
+enum toUnsigned = [
+    int: uint, 
+    short: ushort, 
+    long: ulong
+];
 static assert(toUnsigned[int] == uint);
 static assert(toUnsigned[short] == ushort);
 ```
@@ -263,9 +265,9 @@ template AllImplicitConversionTargets(T)
         alias AllImplicitConversionTargets =
             AliasSeq!(dchar, int, long, AllImplicitConversionTargets!long);
     else static if (is(T == long))
-        alias AllImplicitConversionTargets = AliasSeq!(ulong, CentTypeList, float, double, real);
+        alias AllImplicitConversionTargets = AliasSeq!(ulong, float, double, real);
     else static if (is(T == ulong))
-        alias AllImplicitConversionTargets = AliasSeq!(long, CentTypeList, float, double, real);
+        alias AllImplicitConversionTargets = AliasSeq!(long, float, double, real);
     else static if (is(T == float))
         alias AllImplicitConversionTargets = AliasSeq!(double, real);
     else static if (is(T == double))
@@ -296,10 +298,6 @@ template AllImplicitConversionTargets(T)
     }
     else static if (is(T : void*) && !is(T == void*))
         alias AllImplicitConversionTargets = AliasSeq!(void*);
-    else static if (is(cent) && is(T == cent))
-        alias AllImplicitConversionTargets = AliasSeq!(UnsignedCentTypeList, float, double, real);
-    else static if (is(ucent) && is(T == ucent))
-        alias AllImplicitConversionTargets = AliasSeq!(SignedCentTypeList, float, double, real);
     else
         alias AllImplicitConversionTargets = AliasSeq!();
 }
@@ -322,8 +320,8 @@ type_t[] allImplicitConversionTargets(type_t T)
     case ushort: return [short, wchar, dchar] ~ allImplicitConversionTargets(dchar);
     case int:    return [dchar, uint, long] ~ allImplicitConversionTargets(long);
     case uint:   return [dchar, int, long] ~ allImplicitConversionTargets(long);
-    case long:   return [ulong] ~ CentTypeList ~ [float, double, real];
-    case ulong:  return [long] ~ CentTypeList ~ [float, double, real];
+    case long:   return [ulong, float, double, real];
+    case ulong:  return [long, float, double, real];
     case float:  return [double, real];
     case double: return [float, real];
     case real:   return [float, double];
@@ -332,22 +330,18 @@ type_t[] allImplicitConversionTargets(type_t T)
     case dchar:  return [int, uint, long] ~ allImplicitConversionTargets(long);
     default:
         if (is(T == class))
-            return staticMap!(ApplyLeft!(CopyConstness, T), TransitiveBaseTypeTuple!T);
+            return transitiveBaseTypeTuple(T).map!(B => copyConstness(T, B)).array;
         else if (is(T == interface))
-            return staticMap!(ApplyLeft!(CopyConstness, T), InterfacesTuple!T);
-        else if (isDynamicArray!T && !is(typeof(T.init[0]) == const))
+            return interfacesTuple(T).map!(I => copyConstness(T, I)).array;
+        else if (isDynamicArray(T) && !is(typeof(T.init[0]) == const))
         {
             if (is(typeof(T.init[0]) == shared))
-                return [const(shared(Unqual!(typeof(T.init[0]))))[]];
+                return [const(shared(unqual(typeof(T.init[0]))))[]];
             else
-                return [const(Unqual!(typeof(T.init[0])))[]];
+                return [const(unqual(typeof(T.init[0])))[]];
         }
         else if (is(T : void*) && !is(T == void*))
             return [void*];
-        else if (is(cent) && is(T == cent))
-            return UnsignedCentTypeList ~ [float, double, real];
-        else if (is(ucent) && is(T == ucent))
-            return SignedCentTypeList ~ [float, double, real];
         else
             return [];
     }
