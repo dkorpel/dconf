@@ -1,3 +1,10 @@
+# [DConf 2026](https://dconf.org/2026/#dennisk)
+
+### Lightning talk: Types as expressions
+
+- [Slides (html)](https://dkorpel.github.io/dconf/dconf26-lightning)
+- [Slides (pdf)](https://github.com/dkorpel/dconf/blob/master/dconf26/lightning.pdf)
+
 # [DConf 2025](https://dconf.org/2025/#dennisk)
 
 ### Saying NO to save a language
