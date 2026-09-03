@@ -24,6 +24,11 @@ games it is about all run inside the slides.
 - [Slides (html)](https://dkorpel.github.io/dconf/dconf25/)
 - [Slides (pdf)](https://github.com/dkorpel/dconf/blob/master/dconf25/slides.pdf)
 
+### Lightning talk: GMTK in D
+
+- [Slides (html)](https://dkorpel.github.io/dconf/dconf25-lightning)
+- [Slides (pdf)](https://github.com/dkorpel/dconf/blob/master/dconf25/lightning.pdf)
+
 # [DConf 2024](https://dconf.org/2024/#dennisk)
 
 
