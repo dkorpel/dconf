@@ -1,1 +1,113 @@
-const reportInterval=8;class AudioEngine extends AudioWorkletProcessor{constructor(r){super();const e=r.processorOptions;if(this.ready=!1,this.fallback=!!e.fallback,this.fallback){this.chunks=[],this.head=0,this.fill=0,this.reports=0,this.port.onmessage=t=>{this.chunks.push(t.data),this.fill+=t.data.length/2},this.ready=!0;return}this.memory=e.memory;const o=new Proxy({memory:e.memory},{get:(t,s)=>s in t?t[s]:(()=>0)}),i=new Proxy({},{get:()=>(()=>0)});WebAssembly.instantiate(e.module,{env:o,wasi_snapshot_preview1:i}).then(t=>{const s=t.exports;s.__stack_pointer.value=e.stackTop,s.__wasm_init_tls&&s.__wasm_init_tls(e.tlsBase),this.inst=s,this.outPtr=s.audioOutBuffer(),this.inPtr=s.audioInBuffer(),this.ready=!0}).catch(t=>{this.port.postMessage("audio worklet init failed: "+t)})}process(r,e){if(!this.ready)return!0;if(this.fallback)return this.drain(e[0]);const o=this.inst,i=e[0],t=i[0].length,s=r[0];if(s&&s.length>0){const n=new Float32Array(this.memory.buffer,this.inPtr,t*2),u=s[0],f=s.length>1?s[1]:s[0];for(let h=0;h<t;h++)n[2*h]=u[h],n[2*h+1]=f[h];o.audioCapture(t)}o.audioRender(t);const a=new Float32Array(this.memory.buffer,this.outPtr,t*2),l=i[0],c=i.length>1?i[1]:i[0];for(let n=0;n<t;n++)l[n]=a[2*n],c[n]=a[2*n+1];return!0}drain(r){const e=r[0].length,o=r[0],i=r.length>1?r[1]:r[0];for(let t=0;t<e;t++){const s=this.chunks[0];if(s===void 0){o[t]=0,i[t]=0;continue}o[t]=s[2*this.head],i[t]=s[2*this.head+1],this.head++,this.fill--,this.head*2>=s.length&&(this.chunks.shift(),this.head=0)}return++this.reports>=8&&(this.reports=0,this.port.postMessage(this.fill)),!0}}registerProcessor("audio-engine",AudioEngine);
+// AudioWorklet processor for the low-latency streaming audio engine (see glue.js).
+//
+// The worklet runs a SECOND wasm instance over the same shared memory and calls
+// audioRender/audioCapture on the audio thread. wasm has no thread runtime, so the
+// main thread hands it a dedicated stack + TLS block (via processorOptions) and this
+// processor brings the thread up by hand before invoking any export.
+//
+// Without cross-origin isolation there is no shared memory to re-instantiate over, so the
+// processor runs in fallback mode instead: the main thread renders the same samples and posts
+// them here, and this drains them. Same audio, worse latency.
+//
+// Loaded by AudioContext.audioWorklet.addModule('audio-engine.js'); it ships next to
+// glue.min.js and index.html in every web bundle (see the -web make targets).
+
+// process() quanta between fill reports back to the main thread, which uses them to decide how
+// far to render ahead. 8 quanta is ~21ms at 48kHz.
+const reportInterval = 8;
+
+class AudioEngine extends AudioWorkletProcessor {
+	constructor(options) {
+		super();
+		const o = options.processorOptions;
+		this.ready = false;
+		this.fallback = !!o.fallback;
+		if (this.fallback) {
+			this.chunks = [];
+			this.head = 0;
+			this.fill = 0;
+			this.reports = 0;
+			this.port.onmessage = (e) => {
+				this.chunks.push(e.data);
+				this.fill += e.data.length / 2;
+			};
+			this.ready = true;
+			return;
+		}
+		this.memory = o.memory;
+		const env = new Proxy({ memory: o.memory }, { get: (t, p) => (p in t ? t[p] : (() => 0)) });
+		const wasi = new Proxy({}, { get: () => (() => 0) });
+		WebAssembly.instantiate(o.module, { env, wasi_snapshot_preview1: wasi }).then((inst) => {
+			const ex = inst.exports;
+			// Bring up this thread: point it at its own stack + TLS, then it is safe to call in.
+			// Memory/global ctors already ran on the main thread, so don't call __wasm_call_ctors.
+			ex.__stack_pointer.value = o.stackTop;
+			if (ex.__wasm_init_tls) ex.__wasm_init_tls(o.tlsBase);
+			this.inst = ex;
+			this.outPtr = ex.audioOutBuffer();
+			this.inPtr = ex.audioInBuffer();
+			this.ready = true;
+		}).catch((e) => { this.port.postMessage('audio worklet init failed: ' + e); });
+	}
+	process(inputs, outputs) {
+		if (!this.ready)
+			return true;
+		if (this.fallback)
+			return this.drain(outputs[0]);
+		const ex = this.inst;
+		const out = outputs[0];
+		const frames = out[0].length;
+
+		const input = inputs[0];
+		if (input && input.length > 0) {
+			const inView = new Float32Array(this.memory.buffer, this.inPtr, frames * 2);
+			const l = input[0];
+			const r = input.length > 1 ? input[1] : input[0];
+			for (let i = 0; i < frames; i++) {
+				inView[2 * i    ] = l[i];
+				inView[2 * i + 1] = r[i];
+			}
+			ex.audioCapture(frames);
+		}
+
+		ex.audioRender(frames);
+		const outView = new Float32Array(this.memory.buffer, this.outPtr, frames * 2);
+		const lo = out[0];
+		const ro = out.length > 1 ? out[1] : out[0];
+		for (let i = 0; i < frames; i++)
+		{
+			lo[i] = outView[2 * i];
+			ro[i] = outView[2 * i + 1];
+		}
+		return true;
+	}
+	// Fallback: copy out of the posted chunks, silence when they run dry, and tell the main thread
+	// what is left so it knows how much to render next frame.
+	drain(out) {
+		const frames = out[0].length;
+		const lo = out[0];
+		const ro = out.length > 1 ? out[1] : out[0];
+		for (let i = 0; i < frames; i++) {
+			const chunk = this.chunks[0];
+			if (chunk === undefined) {
+				lo[i] = 0;
+				ro[i] = 0;
+				continue;
+			}
+			lo[i] = chunk[2 * this.head];
+			ro[i] = chunk[2 * this.head + 1];
+			this.head++;
+			this.fill--;
+			if (this.head * 2 >= chunk.length) {
+				this.chunks.shift();
+				this.head = 0;
+			}
+		}
+		if (++this.reports >= reportInterval) {
+			this.reports = 0;
+			this.port.postMessage(this.fill);
+		}
+		return true;
+	}
+}
+registerProcessor('audio-engine', AudioEngine);
